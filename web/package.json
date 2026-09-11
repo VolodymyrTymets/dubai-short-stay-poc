@@ -5,8 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:guest": "npm run dev -w packages/app-dashboard",
-    "dev:admin": "npm run dev -w packages/app-admin",
+    "dev:guest": "npm run dev -w packages/guest --host 3000",
+    "dev:host": "npm run dev -w packages/host --host 3002",
     "build:all": "npm run build --workspaces"
   }
 }
