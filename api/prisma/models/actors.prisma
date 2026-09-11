@@ -1,0 +1,21 @@
+model Guest {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+  accountId String    @unique
+  Account   Account   @relation(fields: [accountId], references: [id])
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model Host {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+  accountId String    @unique
+  Account   Account   @relation(fields: [accountId], references: [id])
+
+  @@index([createdAt(sort: Desc)])
+}
