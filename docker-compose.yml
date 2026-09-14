@@ -18,6 +18,15 @@ services:
         condition: service_healthy
     networks:
       - my_network
+    develop:
+      watch:
+        - path: ./api/src
+          target: /usr/src/app/src
+          action: sync
+        - path: ./api/package.json
+          action: rebuild
+        - path: ./api/prisma
+          action: rebuild
 
   # Background Worker
   worker:
@@ -34,6 +43,15 @@ services:
         condition: service_healthy
     networks:
       - my_network
+    develop:
+      watch:
+        - path: ./api/src
+          target: /usr/src/app/src
+          action: sync
+        - path: ./api/package.json
+          action: rebuild
+        - path: ./api/prisma
+          action: rebuild
 
 
   # PostgreSQL Database
@@ -87,6 +105,22 @@ services:
       - api
     networks:
       - my_network
+    develop:
+      watch:
+        - path: ./web/packages/guest/src
+          target: /usr/src/app/packages/guest/src
+          action: sync
+        - path: ./web/packages/guest/index.html
+          target: /usr/src/app/packages/guest/index.html
+          action: sync
+        - path: ./web/shared
+          target: /usr/src/app/shared
+          action: sync
+        - path: ./web/packages/guest/package.json
+          action: rebuild
+        - path: ./web/packages/guest/vite.config.ts
+          target: /usr/src/app/packages/guest/vite.config.ts
+          action: sync+restart
 
   # Host-facing web app (Vite dev server)
   host:
@@ -103,6 +137,22 @@ services:
       - api
     networks:
       - my_network
+    develop:
+      watch:
+        - path: ./web/packages/host/src
+          target: /usr/src/app/packages/host/src
+          action: sync
+        - path: ./web/packages/host/index.html
+          target: /usr/src/app/packages/host/index.html
+          action: sync
+        - path: ./web/shared
+          target: /usr/src/app/shared
+          action: sync
+        - path: ./web/packages/host/package.json
+          action: rebuild
+        - path: ./web/packages/host/vite.config.ts
+          target: /usr/src/app/packages/host/vite.config.ts
+          action: sync+restart
 
 
 volumes:

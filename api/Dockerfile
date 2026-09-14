@@ -11,7 +11,7 @@ RUN chmod +x ./docker-prisma-migration.sh
 RUN npx prisma generate
 ENTRYPOINT ["./docker-prisma-migration.sh"]
 EXPOSE 3001
-CMD ["yarn", "start"]
+CMD ["yarn", "start:dev"]
 
 # --- Worker Stage ---
 FROM base AS worker

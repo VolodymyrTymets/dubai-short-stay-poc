@@ -23,6 +23,7 @@ this is the real command to run whichever side you touched, and the one the DoD 
 | build | `(cd api && yarn build && yarn worker:build); (cd web && yarn build:all)` |
 | dev server | `sh launch.sh` |
 | full stack (Docker) | `docker-compose up -d --build` (repo root) |
+| full stack, live dev (Docker) | `docker-compose watch` (repo root) — syncs source changes into running containers |
 | e2e | `(cd api && yarn test:e2e)` |
 | db migrate (local only) | `(cd api && yarn prisma-migrate)` |
 | codegen (GraphQL types) | `(cd web/packages/guest && yarn codegen); (cd web/packages/host && yarn codegen)` |

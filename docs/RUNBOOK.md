@@ -38,6 +38,12 @@ No local Node/Postgres/Redis install needed. `api`/`worker` build from `api/Dock
 build from `web/packages/*/Dockerfile` with a build context of `web/` (so `web/shared/**` is picked up).
 Ports match the local setup: API `:3001`, guest `:3000`, host `:3002`, Postgres `:5432`, Redis `:6379`.
 
+For active development, use `docker-compose watch` instead of plain `up` — it syncs source-file changes
+into the running containers (`api/src`, `web/packages/*/src`, `web/shared`) without a rebuild, so `nest
+start --watch` and Vite's dev server pick them up like a local `yarn dev` would; a `package.json` or
+`prisma/` change triggers a full image rebuild instead, since those need a fresh `yarn install`/`prisma
+generate`. Each service's `develop.watch` rules live in the root `docker-compose.yml`.
+
 ## Commands
 See the command map in `CLAUDE.md` — that is the canonical list.
 
