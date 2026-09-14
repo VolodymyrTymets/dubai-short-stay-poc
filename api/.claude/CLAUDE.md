@@ -182,7 +182,7 @@ To add a new queue:
 - `prisma.config.ts` - Prisma configuration with adapter factory
 - `nest-cli.json` - NestJS application definitions
 - `package.json` - Scripts and dependencies
-- `docker-compose.yml` - Local dev environment (PostgreSQL, Redis, API)
+- `docker-compose.yml` (repo root, not `api/`) - Local dev environment for the full stack (PostgreSQL, Redis, API, worker, guest, host)
 
 ## Troubleshooting
 

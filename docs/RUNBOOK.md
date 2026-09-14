@@ -30,6 +30,14 @@ yarn dev:host     # :3002
 sh launch.sh   # opens terminal tabs: api (redis-stack-server + worker + api dev) and web (guest + host)
 ```
 
+### Both at once, in Docker
+```bash
+docker-compose up -d --build   # repo root: api, worker, postgres, redis, guest, host as containers
+```
+No local Node/Postgres/Redis install needed. `api`/`worker` build from `api/Dockerfile`; `guest`/`host`
+build from `web/packages/*/Dockerfile` with a build context of `web/` (so `web/shared/**` is picked up).
+Ports match the local setup: API `:3001`, guest `:3000`, host `:3002`, Postgres `:5432`, Redis `:6379`.
+
 ## Commands
 See the command map in `CLAUDE.md` — that is the canonical list.
 

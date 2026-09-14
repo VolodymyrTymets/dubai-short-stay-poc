@@ -5,12 +5,12 @@ services:
   api:
     container_name: api
     build:
-      context: .
+      context: ./api
       target: development
     ports:
       - "3001:3001"
     env_file:
-      - .env.development
+      - ./api/.env.development
     depends_on:
       postgres:
         condition: service_healthy
@@ -23,10 +23,10 @@ services:
   worker:
     container_name: worker
     build:
-      context: .
+      context: ./api
       target: worker
     env_file:
-      - .env.development
+      - ./api/.env.development
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,7 +42,7 @@ services:
     container_name: postgres
     restart: always
     env_file:
-      - .env.development
+      - ./api/.env.development
     ports:
       - "5432:5432"
     volumes:
@@ -69,6 +69,38 @@ services:
       retries: 5
     volumes:
       - redisdata:/data
+    networks:
+      - my_network
+
+  # Guest-facing web app (Vite dev server)
+  guest:
+    container_name: guest
+    build:
+      context: ./web
+      dockerfile: packages/guest/Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./web/packages/guest/.env
+    depends_on:
+      - api
+    networks:
+      - my_network
+
+  # Host-facing web app (Vite dev server)
+  host:
+    container_name: host
+    build:
+      context: ./web
+      dockerfile: packages/host/Dockerfile
+      target: development
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./web/packages/host/.env
+    depends_on:
+      - api
     networks:
       - my_network
 
