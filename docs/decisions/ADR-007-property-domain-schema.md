@@ -16,10 +16,15 @@ rule sets (seasonal overrides, length-of-stay discounts, etc.) get their own tab
 ## Decision
 1. **Additive-only relations onto the account system.** New domain models (`HostProfile`, `Property`, …)
    add a back-relation field to `Account`/`Guest`/`Host` only when Prisma requires one for referential
-   validity (e.g. `Host.Properties Property[]`, `Account.Guest Guest?`). No existing field is removed,
-   renamed, retyped, or has its behavior changed; `api/schema.gql`'s existing types/operations stay
-   byte-identical. The SRS's `Owner` entity (§B.12) is `Host` + a new `HostProfile` (KYC, bank, tax),
-   not a parallel identity table.
+   validity (e.g. `Host.Properties Property[]`, `Account.Guest Guest?`). No existing field on
+   `Account`/`AccountProfile`/`AccountIdentity`/`Guest`/`Host` is removed, renamed, retyped, or has its
+   behavior changed; `api/schema.gql`'s existing types/operations stay byte-identical. The SRS's `Owner`
+   entity (§B.12) is `Host` + a new `HostProfile` (KYC, bank, tax), not a parallel identity table.
+   **Note (self-review correction):** "additive" describes the account-system *models*, not every
+   migration file this ticket generated — the first migration also squashes in pre-existing, unrelated
+   schema drift (27 legacy tables and an `AccountRoleType` enum shape that predate this repo's current
+   domain, never previously migrated). See `docs/features/property-listing-schema/plan.md`'s Contract
+   changes section for the full explanation; that drift is not part of this decision.
 2. **`RatePlan`'s rule-set fields are `Json`, not normalized tables**, matching how the SRS itself frames
    these as admin-editable rule sets (e.g. `TDFRateSchedule`). No GraphQL surface exposes them yet since
    no JSON scalar dependency is installed (rule C2 — no new runtime dependency without approval).

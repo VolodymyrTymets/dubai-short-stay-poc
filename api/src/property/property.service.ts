@@ -5,7 +5,9 @@ import {
   PropertyStatus,
   CancellationPolicy,
   KycStatus,
+  AccountRoleType,
 } from '../../generated/prisma/client';
+import { AccountRoleService } from '../account-role/account-role.service';
 import { CreatePropertyInput } from './dto/create-property.input';
 import { UpdatePropertyInput } from './dto/update-property.input';
 import { PaginationInput } from '../common/input/pagination.input';
@@ -22,27 +24,49 @@ type PropertyWithJoins = Prisma.PropertyGetPayload<{
   include: typeof PROPERTY_INCLUDE;
 }>;
 
-// Homes commission is locked at 12% (CLAUDE.md §A.3); no per-owner override exists yet.
+// SRS v8.4 §A.3 "Locked commercial rules": Commission · Homes = 12%, locked. No per-owner
+// override exists yet — stored per-property so a future rate change never rewrites history.
 const DEFAULT_COMMISSION_PCT = 12;
+
+// Allowlist (backend-core rule 18): never pass a client-supplied field/direction straight
+// into Prisma orderBy — it can reach unintended relations or throw an opaque 500.
+const SORTABLE_FIELDS = new Set([
+  'createdAt',
+  'updatedAt',
+  'basePriceAed',
+  'title',
+  'status',
+  'bedrooms',
+  'bathrooms',
+]);
+const DEFAULT_TAKE = 20;
+const MAX_TAKE = 100;
+
+type BedShape = { type: string; count: number };
+
+function isBedShape(value: unknown): value is BedShape {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as BedShape).type === 'string' &&
+    typeof (value as BedShape).count === 'number'
+  );
+}
 
 @Injectable()
 export class PropertyService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async getOrCreateHost(accountId: string) {
-    const existing = await this.prisma.host.findUnique({
-      where: { accountId },
-    });
-    if (existing) {
-      return existing;
-    }
-    return this.prisma.host.create({ data: { accountId } });
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly accountRoleService: AccountRoleService,
+  ) {}
 
   toEntity(property: PropertyWithJoins) {
+    const beds = Array.isArray(property.beds)
+      ? property.beds.filter(isBedShape)
+      : [];
     return {
       ...property,
-      beds: property.beds as { type: string; count: number }[],
+      beds,
       amenityIds: property.Amenities.map((a) => a.amenityId),
       accessibilityIds: property.Accessibility.map(
         (a) => a.accessibilityFeatureId,
@@ -51,8 +75,17 @@ export class PropertyService {
     };
   }
 
+  private async isAdmin(accountId: string) {
+    const roles = await this.accountRoleService.getAccountRoles(accountId);
+    return roles.includes(AccountRoleType.ADMIN);
+  }
+
   async createProperty(input: CreatePropertyInput, accountId: string) {
-    const host = await this.getOrCreateHost(accountId);
+    const host = await this.prisma.host.upsert({
+      where: { accountId },
+      create: { accountId },
+      update: {},
+    });
 
     const property = await this.prisma.property.create({
       data: {
@@ -63,7 +96,12 @@ export class PropertyService {
         bedrooms: input.bedrooms,
         bathrooms: input.bathrooms,
         maxGuests: input.maxGuests,
-        beds: input.beds as unknown as Prisma.InputJsonValue,
+        // input.beds is a class-validated PropertyBedInput[]; mapped to a plain object so no
+        // class-instance value reaches Prisma's InputJsonValue (which rejects class instances).
+        beds: input.beds.map(({ type, count }) => ({
+          type,
+          count,
+        })),
         areaId: input.areaId,
         cityId: input.cityId,
         lat: input.lat,
@@ -96,10 +134,16 @@ export class PropertyService {
 
   private async assertOwnership(propertyId: string, accountId: string) {
     const property = await this.prisma.property.findUnique({
-      where: { id: propertyId },
+      where: { id: propertyId, deleted: false },
       include: { Owner: true },
     });
-    if (!property || property.Owner.accountId !== accountId) {
+    if (!property) {
+      throw new ForbiddenException(FORBIDDEN);
+    }
+    if (
+      property.Owner.accountId !== accountId &&
+      !(await this.isAdmin(accountId))
+    ) {
       throw new ForbiddenException(FORBIDDEN);
     }
     return property;
@@ -131,7 +175,11 @@ export class PropertyService {
         ...(input.bathrooms !== undefined && { bathrooms: input.bathrooms }),
         ...(input.maxGuests !== undefined && { maxGuests: input.maxGuests }),
         ...(input.beds !== undefined && {
-          beds: input.beds as unknown as Prisma.InputJsonValue,
+          // See createProperty — mapped to a plain object for the same InputJsonValue reason.
+          beds: input.beds.map(({ type, count }) => ({
+            type,
+            count,
+          })),
         }),
         ...(input.areaId !== undefined && { areaId: input.areaId }),
         ...(input.cityId !== undefined && { cityId: input.cityId }),
@@ -185,10 +233,16 @@ export class PropertyService {
 
   async findPropertyForOwner(id: string, accountId: string) {
     const property = await this.prisma.property.findUnique({
-      where: { id },
+      where: { id, deleted: false },
       include: { ...PROPERTY_INCLUDE, Owner: true },
     });
-    if (!property || property.Owner.accountId !== accountId) {
+    if (!property) {
+      return null;
+    }
+    if (
+      property.Owner.accountId !== accountId &&
+      !(await this.isAdmin(accountId))
+    ) {
       return null;
     }
     return this.toEntity(property);
@@ -204,16 +258,18 @@ export class PropertyService {
       return [];
     }
 
+    const orderBy = pagination.orderBy
+      .filter((sort) => SORTABLE_FIELDS.has(sort.field))
+      .map((sort) => ({ [sort.field]: sort.order }));
+
     const properties = await this.prisma.property.findMany({
       where: {
         ownerId: host.id,
         deleted: false,
         ...(search?.slug && { slug: { contains: search.slug } }),
       },
-      orderBy: pagination.orderBy.map((sort) => ({
-        [sort.field]: sort.order,
-      })),
-      take: pagination.take,
+      orderBy: orderBy.length > 0 ? orderBy : [{ createdAt: 'desc' }],
+      take: Math.min(pagination.take ?? DEFAULT_TAKE, MAX_TAKE),
       skip: pagination.skip,
       include: PROPERTY_INCLUDE,
     });

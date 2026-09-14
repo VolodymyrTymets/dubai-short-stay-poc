@@ -4,10 +4,13 @@ import {
   IsBoolean,
   IsEnum,
   IsInt,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
   IsNumber,
   IsOptional,
   IsString,
-  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -20,14 +23,20 @@ import { PropertyBedInput } from './property-bed.input';
 @InputType()
 export class CreatePropertyInput {
   @IsString()
+  @MaxLength(80)
+  @Matches(/^[a-z0-9]+(-[a-z0-9]+)*$/, {
+    message: 'slug must be lowercase alphanumeric words separated by hyphens',
+  })
   @Field(() => String)
   slug!: string;
 
   @IsString()
+  @MaxLength(200)
   @Field(() => String)
   title!: string;
 
   @IsString()
+  @MaxLength(5000)
   @Field(() => String)
   description!: string;
 
@@ -65,10 +74,14 @@ export class CreatePropertyInput {
   cityId!: string;
 
   @IsNumber()
+  @Min(-90)
+  @Max(90)
   @Field(() => Float)
   lat!: number;
 
   @IsNumber()
+  @Min(-180)
+  @Max(180)
   @Field(() => Float)
   lng!: number;
 
@@ -101,6 +114,7 @@ export class CreatePropertyInput {
   accessibilityIds?: string[];
 
   @IsString()
+  @MaxLength(64)
   @IsOptional()
   @Field(() => String, { nullable: true })
   detPermitNumber?: string;

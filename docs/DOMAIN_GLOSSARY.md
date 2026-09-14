@@ -28,6 +28,14 @@
 | `AccountRoleType` | `GUEST`, `HOST`, `ADMIN` | Who the account currently acts as. |
 | `FileType` | `IMG`, `VIDEO` | The media kind of an uploaded `File`. |
 | `FileStatus` | `FILE_STATUS_CREATED`, `FILE_STATUS_UPLOAD_IN_PROGRESS`, `FILE_STATUS_UPLOAD_COMPLETED`, `FILE_STATUS_UPLOAD_FAILED` | Where an upload is in its lifecycle. |
+| `PropertyStatus` | `DRAFT`, `PENDING_REVIEW`, `LIVE`, `PAUSED`, `ARCHIVED` | A `Property`'s listing lifecycle (SRS §B.0). `LIVE` requires the owner's `HostProfile.kycStatus` to be `VERIFIED` with a verified bank account (locked rule, SRS §B.12). |
+| `PropertyType` | `APARTMENT`, `VILLA`, `TOWNHOUSE`, `PENTHOUSE` | The physical type of a `Property`. |
+| `CancellationPolicy` | `FLEXIBLE`, `MODERATE`, `STRICT` | A `Property`'s booking cancellation terms. |
+| `KycStatus` | `PENDING`, `VERIFIED`, `REJECTED` | Verification state of a `HostProfile` or an individual `HostKycDocument`. |
+| `HostKycDocumentType` | `PASSPORT`, `EMIRATES_ID`, `TRADE_LICENSE`, `TITLE_DEED`, `EJARI`, `NOC`, `POA` | The 7 document types a `HostKycDocument` can be (SRS §B.12). |
+| `PoiType` | `LANDMARK`, `BEACH`, `MALL`, `DINING` | The kind of point of interest a `Poi` represents. |
+| `AmenityCategory` | `ESSENTIALS`, `LIVING`, `KITCHEN`, `OUTDOOR`, `SAFETY`, `PREMIUM` | The 6 categories the 48 locked `AmenityCatalog` entries fall into (SRS §B.6). |
+| `AccessibilityCategory` | `MOBILITY`, `SENSORY`, `COMMUNICATION`, `COGNITIVE` | The 4 categories the 16 locked `AccessibilityFeature` entries fall into (SRS §B.8). |
 
 `Property` and `RatePlan` now exist (see the table above). Booking/transactional terms (`Booking`,
 `Payment`, `Refund`, `Review`, `DisputeCase`, etc., visible in `doc/designs/` mockup names like

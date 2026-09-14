@@ -12,8 +12,20 @@ owner-scoped list query outside the frozen `pagination.service.ts` — R5 introd
 
 ## Contract changes
 - data: 4 new Prisma migrations (catalog, HostProfile/HostKycDocument, Property + join tables, RatePlan)
-  via `yarn prisma-migrate`; `yarn prisma-gen` after each. All additive — no column on an existing table
-  is altered, dropped or renamed. `Host` gains one new back-relation array field (`Properties`).
+  via `yarn prisma-migrate`; `yarn prisma-gen` after each. **Correction (post-implementation, caught by
+  self-review):** only migrations 2-4 are purely additive. Migration 1
+  (`20260914122817_add_property_listing_catalog`) is **not** additive — this branch's starting point had
+  pre-existing, unrelated schema drift: `api/prisma/models/*.prisma` had already been rewritten to the
+  current `Account`/`Guest`/`Host` shape (see R1's commit message) with no migration ever generated for
+  it, so the first real `prisma migrate dev` on this branch squashed that drift together with the new
+  catalog tables in one file. It drops 27 legacy "Trukkit" tables (`Customer`, `Order`, `Driver`,
+  `StripeCheckout`, …) that predate this repo's current domain and rewrites `AccountRoleType` from its
+  old 8-value shape to `GUEST`/`HOST`/`ADMIN` (matching what `account.prisma` already declared). No
+  column on `Account`/`AccountProfile`/`AccountIdentity`/`Guest`/`Host` itself is altered, dropped or
+  renamed — only the unrelated legacy tables and enum are affected — but "all additive" was the wrong
+  claim for this file and is corrected here. Acceptable at POC/local-only stage (rule C5, no real data
+  in those tables); a fresh clone applies migration 1 cleanly since it never had the legacy tables.
+  `Host` gains one new back-relation array field (`Properties`).
 - boundary: `api/schema.gql` gains `PropertyEntity`, `RatePlanEntity`, `Query.property`,
   `Query.myProperties`, `Mutation.createProperty`, `Mutation.updateProperty`. Every existing type/field/
   operation in `schema.gql` stays byte-identical (AC6).
@@ -54,7 +66,8 @@ owner-scoped list query outside the frozen `pagination.service.ts` — R5 introd
   `PropertyPhoto`); `actors.prisma` (change: add `Properties Property[]` back-relation to `Host`, same
   additive rule as R2); `catalog.prisma`/`files.prisma` (change: back-relation fields only).
 - layer: data. Fields per SRS §B.0: identity/status/slug, content, capacity, location (`areaId`,
-  `cityId`, `lat`, `lng`, `addressDisclosed` — always `true` for now per spec out-of-scope), pricing
+  `cityId`, `lat`, `lng`, `addressDisclosed` — defaults `false` per the SRS's own field default,
+  matching implementation; no query yet enforces flipping it, per spec out-of-scope), pricing
   (`basePriceAed`, `cleaningFeeAed`, `currency`, `isInstantBook`), catalog refs via the join tables,
   regulatory (`detPermitNumber`, `tdfPerBedroom`), owner ref (`ownerId → Host.id`,
   `commissionPct`), cancellation policy, curation (`activeBadges` as `Json`, `qualityScore`), read-only
