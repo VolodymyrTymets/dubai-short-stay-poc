@@ -1,0 +1,161 @@
+// SRS v8.4 §B.0 Property ("Home" product), adapted onto the existing Host actor table.
+// Phase 1 of the SRS schema adaptation — see docs/features/property-listing-schema/plan.md (R3).
+//
+// Deviations from the SRS's literal TS type, both reuse of existing repo entities:
+// - hero_photo/gallery (raw URLs in the SRS) are PropertyPhoto rows referencing the existing File
+//   entity instead, matching how this repo already models uploaded assets.
+// - owner_id (SRS "Owner" §B.12) points at the existing Host.id, since Owner == Host + HostProfile here.
+
+enum PropertyStatus {
+  DRAFT
+  PENDING_REVIEW
+  LIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum PropertyType {
+  APARTMENT
+  VILLA
+  TOWNHOUSE
+  PENTHOUSE
+}
+
+enum CancellationPolicy {
+  FLEXIBLE
+  MODERATE
+  STRICT
+}
+
+model Property {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+
+  // — Identity —
+  status PropertyStatus @default(DRAFT)
+  slug   String         @unique
+
+  // — Content —
+  title       String
+  description String
+  propertyType PropertyType
+
+  // — Capacity —
+  bedrooms  Int
+  bathrooms Float
+  maxGuests Int
+  // [{ type, count }] — no independent identity of its own, kept inline per bed group.
+  beds      Json
+
+  // — Location —
+  areaId            String
+  Area              Area    @relation(fields: [areaId], references: [id])
+  cityId            String
+  City              City    @relation(fields: [cityId], references: [id])
+  lat               Float
+  lng               Float
+  // false until a booking is confirmed (SRS §B.0) — no writer yet, Booking is phase 2.
+  addressDisclosed  Boolean @default(false)
+
+  // — Pricing —
+  basePriceAed   Int
+  cleaningFeeAed Int?
+  currency       String  @default("AED")
+  isInstantBook  Boolean @default(true)
+
+  // — Catalog refs —
+  Amenities      PropertyAmenity[]
+  Accessibility  PropertyAccessibility[]
+  Photos         PropertyPhoto[]
+  RatePlan       RatePlan?
+
+  // — Regulatory —
+  // Required for status: live (locked rule, enforced in the service layer, not the schema).
+  detPermitNumber String?
+  // 7/10/15/20 AED per bedroom — the resolved TDF rate; TDFRateSchedule (§B.50) is out of scope.
+  tdfPerBedroom   Int?
+
+  // — Owner —
+  ownerId       String
+  Owner         Host   @relation(fields: [ownerId], references: [id])
+  commissionPct Int
+
+  // — Cancellation —
+  cancellationPolicy CancellationPolicy @default(MODERATE)
+
+  // — Curation —
+  // [{ type, category, expires_at? }] — badge shape varies by type, kept as Json (SRS §B.0).
+  activeBadges Json?
+  qualityScore Int  @default(0)
+
+  // — Performance (read-only, computed; no writer yet — Review/Booking are out of scope) —
+  rating       Float?
+  reviewCount  Int    @default(0)
+  bookingsTotal Int   @default(0)
+
+  // — Lifecycle —
+  publishedAt DateTime?
+
+  @@index([status, deleted])
+  @@index([cityId, areaId])
+  @@index([ownerId])
+}
+
+model PropertyAmenity {
+  propertyId String
+  Property   Property       @relation(fields: [propertyId], references: [id])
+  amenityId  String
+  Amenity    AmenityCatalog @relation(fields: [amenityId], references: [id])
+
+  @@id([propertyId, amenityId])
+}
+
+model PropertyAccessibility {
+  propertyId             String
+  Property               Property              @relation(fields: [propertyId], references: [id])
+  accessibilityFeatureId String
+  AccessibilityFeature   AccessibilityFeature  @relation(fields: [accessibilityFeatureId], references: [id])
+
+  @@id([propertyId, accessibilityFeatureId])
+}
+
+model PropertyPhoto {
+  id         String   @id @default(uuid(4))
+  createdAt  DateTime @default(now())
+  propertyId String
+  Property   Property @relation(fields: [propertyId], references: [id])
+  fileId     String
+  File       File     @relation(fields: [fileId], references: [id])
+  position   Int      @default(0)
+  isHero     Boolean  @default(false)
+
+  @@index([propertyId, position])
+}
+
+// SRS v8.4 §B.23 RatePlan — the pricing structure attached to a Property.
+// Rule-set fields kept as Json (spec open question #2): admin-editable rule sets with no
+// independent query need of their own, matching how the SRS itself frames TDFRateSchedule etc.
+model RatePlan {
+  id         String    @id @default(uuid(4))
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+  deleted    Boolean   @default(false)
+  propertyId String    @unique
+  Property   Property  @relation(fields: [propertyId], references: [id])
+
+  baseNightlyAed    Int
+  weekendMultiplier Float?
+  // { start, end, nightlyAed }[]
+  seasonalOverrides Json?
+  // { minNights, discountPct }[]
+  losDiscounts      Json?
+  // { hoursBefore, discountPct }
+  lastMinuteDiscount Json?
+  // { occupancyPctThreshold, multiplier }[]
+  occupancyPricing  Json?
+  // { channel, markupPct }[]
+  channelMarkups    Json?
+  isActive          Boolean @default(true)
+}

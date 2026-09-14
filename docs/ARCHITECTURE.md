@@ -15,7 +15,7 @@
 There is no root `package.json`; `api/` and `web/` are managed independently and never import each other's code.
 
 ## Where data truth lives
-- **PostgreSQL + PostGIS** (via Prisma, `api/prisma/schema.prisma` + `api/prisma/models/*.prisma`) is authoritative for all domain data: `Account`, `AccountProfile`, `AccountRole`/`AccountOnRole`, `AccountIdentity`, `Guest`, `Host`, `File`, plus system tables `Migration`, `DeletedHistory`. PostGIS is enabled for future geospatial queries (property location, search-by-area).
+- **PostgreSQL + PostGIS** (via Prisma, `api/prisma/schema.prisma` + `api/prisma/models/*.prisma`) is authoritative for all domain data: `Account`, `AccountProfile`, `AccountRole`/`AccountOnRole`, `AccountIdentity`, `Guest`, `Host`, `File`, plus system tables `Migration`, `DeletedHistory`. PostGIS is enabled but not yet used by any model — `Property.lat`/`lng` are plain `Float` columns for now (see ADR-007). Phase 1 of the SRS-to-Prisma migration (`docs/features/property-listing-schema/`) added the Property/Listing domain: `City`/`Area`/`Poi`/`AmenityCatalog`/`AccessibilityFeature` (catalog reference data), `HostProfile`/`HostKycDocument` (the SRS `Owner` entity, additively hung off `Host`), and `Property`/`PropertyAmenity`/`PropertyAccessibility`/`PropertyPhoto`/`RatePlan`. Later SRS phases (Booking, Payment, Review, …) are not built yet — see the spec's out-of-scope list.
 - **Redis** is a derived cache (multi-tier: in-memory `CacheableMemory` 60s TTL, falling back to Redis) and the BullMQ job-queue backend — never a source of truth.
 - **Generated, never edited by hand:** `api/generated/prisma/**` (Prisma client), `api/schema.gql` (Apollo auto-generated schema), each web package's `src/gql/**` (graphql-codegen output, gitignored).
 
@@ -43,6 +43,15 @@ A GraphQL query with `pagination`/`sorting`/`search` args (`api/src/common/input
 ### 3. Background job
 API enqueues a job (e.g. SMS) via BullMQ/Redis → the separate worker process (`src/worker.ts`, `WorkerModule`) picks it up and runs the matching consumer in `src/background-workers/`.
 
+### 4. Host property listing (`api/src/property/`)
+Client calls `createProperty` → `PropertyResolver` (role-gated to `HOST`/`ADMIN`) → `PropertyService`
+lazily gets-or-creates the calling account's `Host` row, creates the `Property` row plus its
+`PropertyAmenity`/`PropertyAccessibility`/`PropertyPhoto` joins, `status: DRAFT`. `updateProperty`
+re-checks row ownership in the service (not just the role guard) and, on a transition to `status: LIVE`,
+enforces the SRS §B.12 locked rule: the owner's `HostProfile.kycStatus` must be `VERIFIED` and
+`bankAccountVerified` must be `true`, else it throws `FORBIDDEN`. `myProperties`/`property(id)` are
+scoped to the caller's own `Host` — no public/guest-facing listing query exists yet.
+
 ## External integrations
 | Service | Purpose | Failure mode | Sandbox available? |
 |---------|---------|--------------|--------------------|
@@ -55,3 +64,4 @@ API enqueues a job (e.g. SMS) via BullMQ/Redis → the separate worker process (
 - `guest`/`host` are still scaffold-stage — no real screens, routing, or forms yet, only the placeholder/smoke-test `App.tsx`. `web/shared/components/` now has the full design-system component set (ADR-007) ready to consume; `frontend-react.md`'s rules will start mattering fully once a real screen imports them.
 - `yarn start:dev`, `yarn test:e2e` (via full `AppModule`) and `yarn codegen` need live Postgres/PostGIS + Redis; `yarn test` (unit) and the rest of `yarn test:e2e` run standalone against in-memory PGlite.
 - No CI existed before this PR; `api/`'s lint (55 pre-existing problems) and one placeholder e2e test (`expect(true).toEqual(false)` in `update-account-profile.e2e-spec.ts`) are known, pre-existing failures — not introduced by this setup.
+- `yarn test:e2e`'s default (parallel) Jest workers can flake under load as the e2e suite grows — each worker boots its own in-memory PGlite + full `AppModule` (BullMQ/Redis included), and the default 5000ms hook timeout can be exceeded by CPU contention alone, not a real bug. `yarn test:e2e --runInBand` runs serially and is the reliable way to get a clean signal; it can hang on exit due to an unrelated pre-existing open-handle issue (Jest logs "did not exit one second after the test run has completed") — the test results themselves print before that hang, so read those and don't wait for the process to exit on its own.

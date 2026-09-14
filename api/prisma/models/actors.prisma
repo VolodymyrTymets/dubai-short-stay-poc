@@ -17,5 +17,8 @@ model Host {
   accountId String    @unique
   Account   Account   @relation(fields: [accountId], references: [id])
 
+  HostProfile HostProfile?
+  Properties  Property[]
+
   @@index([createdAt(sort: Desc)])
 }

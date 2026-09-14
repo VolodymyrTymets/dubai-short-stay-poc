@@ -42,7 +42,7 @@ export class AccountService extends PrismaCashingService {
     });
   }
 
-  async createCustomerAccount(phoneNumber: string) {
+  async createGuestAccount(phoneNumber: string) {
     const account = await this.prismaService.account.create({
       data: {
         lastLoginAt: new Date(),
@@ -51,7 +51,7 @@ export class AccountService extends PrismaCashingService {
             phoneNumber,
           },
         },
-        Customers: {
+        Guest: {
           create: {
             createdAt: new Date(),
           },
@@ -61,7 +61,7 @@ export class AccountService extends PrismaCashingService {
 
     await this.accountRoleService.addAccountToRole(
       account.id,
-      AccountRoleType.CUSTOMER,
+      AccountRoleType.GUEST,
     );
 
     return account;

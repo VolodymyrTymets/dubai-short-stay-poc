@@ -114,7 +114,7 @@ describe('AccountService', () => {
 
   describe('createAccount', () => {
     it('should create an account with the given phone number profile', async () => {
-      const result = await service.createCustomerAccount('+1444555666');
+      const result = await service.createGuestAccount('+1444555666');
 
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
@@ -128,7 +128,7 @@ describe('AccountService', () => {
     });
 
     it('should be retrievable by phone number after creation', async () => {
-      const created = await service.createCustomerAccount('+1555666777');
+      const created = await service.createGuestAccount('+1555666777');
 
       const found = await service.getAccountByPhoneNumber('+1555666777');
 

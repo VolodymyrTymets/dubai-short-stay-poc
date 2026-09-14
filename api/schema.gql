@@ -86,10 +86,109 @@ type SignInOtpEntity {
   code: String
 }
 
+type PropertyBedEntity {
+  type: String!
+  count: Int!
+}
+
+type PropertyPhotoEntity {
+  id: String!
+  fileId: String!
+  position: Int!
+  isHero: Boolean!
+}
+
+type PropertyEntity {
+  id: String!
+  status: PropertyStatus!
+  slug: String!
+  title: String!
+  description: String!
+  propertyType: PropertyType!
+  bedrooms: Int!
+  bathrooms: Float!
+  maxGuests: Int!
+  beds: [PropertyBedEntity!]!
+  areaId: String!
+  cityId: String!
+  lat: Float!
+  lng: Float!
+  addressDisclosed: Boolean!
+  basePriceAed: Int!
+  cleaningFeeAed: Int
+  currency: String!
+  isInstantBook: Boolean!
+  amenityIds: [String!]!
+  accessibilityIds: [String!]!
+  detPermitNumber: String
+  tdfPerBedroom: Int
+  ownerId: String!
+  commissionPct: Int!
+  cancellationPolicy: CancellationPolicy!
+  qualityScore: Int!
+  rating: Float
+  reviewCount: Int!
+  bookingsTotal: Int!
+  createdAt: DateTime!
+  publishedAt: DateTime
+  photos: [PropertyPhotoEntity!]!
+}
+
+enum PropertyStatus {
+  DRAFT
+  PENDING_REVIEW
+  LIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum PropertyType {
+  APARTMENT
+  VILLA
+  TOWNHOUSE
+  PENTHOUSE
+}
+
+enum CancellationPolicy {
+  FLEXIBLE
+  MODERATE
+  STRICT
+}
+
 type Query {
   """Get current account"""
   account: AccountEntity!
   file(fileId: String!): FileEntity
+
+  """Get one of the current host's own property listings by id"""
+  property(id: String!): PropertyEntity
+
+  """List the current host's own property listings"""
+  myProperties(pagination: PaginationInput, search: SearchInput): [PropertyEntity!]!
+}
+
+input PaginationInput {
+  """sorting"""
+  orderBy: [SortingInput!] = [{ field: "createdAt", order: "desc" }]
+
+  """take"""
+  take: Int
+
+  """skip"""
+  skip: Int
+}
+
+input SortingInput {
+  """sorting field"""
+  field: String!
+
+  """sorting order"""
+  order: String!
+}
+
+input SearchInput {
+  """default search argument"""
+  slug: String
 }
 
 type Mutation {
@@ -111,6 +210,12 @@ type Mutation {
   """Refresh access token using a valid refresh token."""
   refreshToken: AuthTokensEntity!
   signOut: Boolean!
+
+  """Create a new property listing (draft) for the current host"""
+  createProperty(input: CreatePropertyInput!): PropertyEntity!
+
+  """Update the current host's own property listing"""
+  updateProperty(id: String!, input: UpdatePropertyInput!): PropertyEntity!
 }
 
 input UpdateAccountProfileInput {
@@ -170,4 +275,56 @@ input SignInInput {
 input VerifyOtpInput {
   phoneNumber: String!
   code: String!
+}
+
+input CreatePropertyInput {
+  slug: String!
+  title: String!
+  description: String!
+  propertyType: PropertyType!
+  bedrooms: Int!
+  bathrooms: Float!
+  maxGuests: Int!
+  beds: [PropertyBedInput!]!
+  areaId: String!
+  cityId: String!
+  lat: Float!
+  lng: Float!
+  basePriceAed: Int!
+  cleaningFeeAed: Int
+  isInstantBook: Boolean = true
+  amenityIds: [String!] = []
+  accessibilityIds: [String!] = []
+  detPermitNumber: String
+  tdfPerBedroom: Int
+  cancellationPolicy: CancellationPolicy
+}
+
+input PropertyBedInput {
+  type: String!
+  count: Int!
+}
+
+input UpdatePropertyInput {
+  slug: String
+  title: String
+  description: String
+  propertyType: PropertyType
+  bedrooms: Int
+  bathrooms: Float
+  maxGuests: Int
+  beds: [PropertyBedInput!]
+  areaId: String
+  cityId: String
+  lat: Float
+  lng: Float
+  basePriceAed: Int
+  cleaningFeeAed: Int
+  isInstantBook: Boolean = true
+  amenityIds: [String!] = []
+  accessibilityIds: [String!] = []
+  detPermitNumber: String
+  tdfPerBedroom: Int
+  cancellationPolicy: CancellationPolicy
+  status: PropertyStatus
 }

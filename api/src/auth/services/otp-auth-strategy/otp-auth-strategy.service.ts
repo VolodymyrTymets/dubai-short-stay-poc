@@ -32,7 +32,7 @@ export class OtpAuthStrategyService extends JwtStrategyService {
       signInInput.phoneNumber,
     );
     if (!account) {
-      account = await this.accountService.createCustomerAccount(
+      account = await this.accountService.createGuestAccount(
         signInInput.phoneNumber,
       );
     }

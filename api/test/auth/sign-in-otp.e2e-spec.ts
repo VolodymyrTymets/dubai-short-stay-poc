@@ -113,7 +113,7 @@ describe('Sign in otp (e2e)', () => {
       accountResponse.body.data.account.AccountProfile.isPhoneVerified,
     ).toEqual(true);
     const accountId = accountResponse.body.data.account.id as string;
-    const accountRole= await prismaService.accountRole.findMany({
+    const accountRole = await prismaService.accountRole.findMany({
       where: {
         AccountOnRole: {
           some: {
@@ -126,7 +126,7 @@ describe('Sign in otp (e2e)', () => {
       },
     });
     expect(accountRole.length).toEqual(1);
-    expect(accountRole[0].type).toEqual(AccountRoleType.CUSTOMER);
+    expect(accountRole[0].type).toEqual(AccountRoleType.GUEST);
   });
 
   it('Should not sign in if otp is not valid', async () => {
