@@ -1,0 +1,102 @@
+// Read-only reference/catalog data for the Property/Listing domain (SRS v8.4 §B.4-B.8).
+// Phase 1 of the SRS schema adaptation — see docs/features/property-listing-schema/plan.md.
+
+model City {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+  name      String
+  slug      String    @unique
+  country   String    @default("UAE")
+  active    Boolean   @default(true)
+
+  Areas Area[]
+  Pois  Poi[]
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model Area {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+  cityId    String
+  City      City      @relation(fields: [cityId], references: [id])
+  name      String
+  slug      String
+  heroCopy  String?
+  // Peak season / average nightly rate / busiest months (§0.3 "insider_data_block")
+  insiderData Json?
+  active    Boolean   @default(true)
+
+  Pois Poi[]
+
+  @@unique([cityId, slug])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum PoiType {
+  LANDMARK
+  BEACH
+  MALL
+  DINING
+}
+
+model Poi {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+  name      String
+  type      PoiType
+  cityId    String
+  City      City      @relation(fields: [cityId], references: [id])
+  areaId    String?
+  Area      Area?     @relation(fields: [areaId], references: [id])
+  lat       Float
+  lng       Float
+
+  @@index([createdAt(sort: Desc)])
+}
+
+enum AmenityCategory {
+  ESSENTIALS
+  LIVING
+  KITCHEN
+  OUTDOOR
+  SAFETY
+  PREMIUM
+}
+
+// 48 locked items (SRS §B.6)
+model AmenityCatalog {
+  id       String          @id @default(uuid(4))
+  deleted  Boolean         @default(false)
+  key      String          @unique
+  label    String
+  category AmenityCategory
+  active   Boolean         @default(true)
+
+  @@index([category, deleted])
+}
+
+enum AccessibilityCategory {
+  MOBILITY
+  SENSORY
+  COMMUNICATION
+  COGNITIVE
+}
+
+// 16 locked items (SRS §B.8)
+model AccessibilityFeature {
+  id       String                 @id @default(uuid(4))
+  deleted  Boolean                @default(false)
+  key      String                 @unique
+  label    String
+  category AccessibilityCategory
+  active   Boolean                @default(true)
+
+  @@index([category, deleted])
+}

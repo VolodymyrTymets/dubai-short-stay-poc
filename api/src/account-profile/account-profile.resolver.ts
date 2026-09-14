@@ -20,7 +20,7 @@ export class AccountProfileResolver {
     description: 'Update account profile',
   })
   @UseGuards(RoleGuard)
-  @Roles(AccountRoleType.ADMIN, AccountRoleType.CUSTOMER)
+  @Roles(AccountRoleType.ADMIN, AccountRoleType.GUEST)
   @UseGuards(GqlAuthGuard)
   async updateAccountProfile(
     @Args('accountId', { type: () => String }) accountId: string,

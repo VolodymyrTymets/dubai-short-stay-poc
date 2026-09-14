@@ -5,6 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { DataCooker } from '../../test/utils/DataCooker/DataCooker';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccountRoleModule } from '../account-role/account-role.module';
+import { FilesModule } from '../files/files.module';
 
 describe('AccountProfileService', () => {
   let service: AccountProfileService;
@@ -25,6 +26,7 @@ describe('AccountProfileService', () => {
         }),
         AccountRoleModule,
         PrismaModule,
+        FilesModule,
       ],
       providers: [AccountProfileService],
     }).compile();

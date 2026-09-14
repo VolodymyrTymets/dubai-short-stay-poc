@@ -18,6 +18,8 @@ model Account {
   LastAccountRole       AccountRole?            @relation(fields: [lastAccountRoleId], references: [id])
 
   Files                File[]
+  Guest                Guest?
+  Host                 Host?
 
   @@index([createdAt(sort: Desc)])
 }

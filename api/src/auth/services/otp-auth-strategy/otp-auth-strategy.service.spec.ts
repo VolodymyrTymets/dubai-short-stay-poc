@@ -15,6 +15,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtStrategy } from '../../strategies/jwt.strategy';
 import { GqlAuthGuard } from '../../guards/gql-auth.guard';
 import { AccountRoleModule } from '../../../account-role/account-role.module';
+import { FilesModule } from '../../../files/files.module';
 
 describe('OtpAuthStrategyService', () => {
   let otpAuthStrategyService: OtpAuthStrategyService;
@@ -41,6 +42,7 @@ describe('OtpAuthStrategyService', () => {
         NotifierModule,
         PassportModule,
         AccountRoleModule,
+        FilesModule,
         JwtModule.register({
           secret: 'test-jwt-secret',
           signOptions: { expiresIn: '15m' },

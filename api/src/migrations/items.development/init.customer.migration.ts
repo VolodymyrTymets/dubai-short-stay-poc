@@ -25,12 +25,12 @@ export class InitCustomerMigration implements IMigrationItem {
   }
 
   async inNeedToRun() {
-    return (await this.prisma.customer.count()) === 0;
+    return (await this.prisma.guest.count()) === 0;
   }
   async run() {
     try {
       for (const customerInput of customers) {
-        const account = await this.accountService.createCustomerAccount(
+        const account = await this.accountService.createGuestAccount(
           customerInput.phoneNumber,
         );
         await this.accountProfileService.updateAccountProfile(account.id, {

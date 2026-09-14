@@ -17,6 +17,8 @@ model File {
 
   CreatedBy Account @relation(fields: [createdById], references: [id])
 
+  AccountProfile AccountProfile[]
+
   @@index([createdAt(sort: Desc), mimeType, status])
 }
 
