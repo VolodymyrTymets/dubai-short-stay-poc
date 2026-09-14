@@ -9,7 +9,7 @@
 | `api/` | NestJS GraphQL backend + BullMQ worker, Prisma/PostGIS | Yes — two entry points (`src/main.ts`, `src/worker.ts`) from one `src/` | backend |
 | `web/packages/guest` | Guest-facing React SPA (Vite, port 3000) | Yes | web |
 | `web/packages/host` | Host-facing React SPA (Vite, port 3002) | Yes | web |
-| `web/shared/` | Code shared by both web apps: `theme.css` (Tailwind v4 tokens), `apollo/client.ts` (Apollo factory), `components/` (reserved, currently empty) | No | web |
+| `web/shared/` | Code shared by both web apps: `theme.css` (Tailwind v4 tokens), `apollo/client.ts` (Apollo factory), `components/` — the shared UI component library (`Logo`, `Button`, `Badge`/`Avatar`, `Input`/`Checkbox`/`Radio`/`Switch`/`Tabs`, `SearchBar`, `Header`, `PropertyCard`/`BookingCard`, `Sidebar`, `icons.tsx`), built per ADR-007 | No | web |
 | `doc/` | Product reference: `DSS-SRS-v9 2.pdf` (SRS) and `designs/` (HTML/CSS mockups) | No | product |
 
 There is no root `package.json`; `api/` and `web/` are managed independently and never import each other's code.
@@ -52,6 +52,6 @@ API enqueues a job (e.g. SMS) via BullMQ/Redis → the separate worker process (
 
 ## Known constraints and landmines
 - `api/src/common/pagination.service.ts` / `prismacashing.service.ts` index Prisma by a raw `collection: string` — legacy generic pattern, don't extend it (see CLAUDE.md project rules).
-- `web/` is still scaffold-stage: only `App.tsx`/`main.tsx`/`index.css` exist per package, no real screens, routing, or forms yet — most `frontend-react.md` rules will start mattering once real UI lands.
+- `guest`/`host` are still scaffold-stage — no real screens, routing, or forms yet, only the placeholder/smoke-test `App.tsx`. `web/shared/components/` now has the full design-system component set (ADR-007) ready to consume; `frontend-react.md`'s rules will start mattering fully once a real screen imports them.
 - `yarn start:dev`, `yarn test:e2e` (via full `AppModule`) and `yarn codegen` need live Postgres/PostGIS + Redis; `yarn test` (unit) and the rest of `yarn test:e2e` run standalone against in-memory PGlite.
 - No CI existed before this PR; `api/`'s lint (55 pre-existing problems) and one placeholder e2e test (`expect(true).toEqual(false)` in `update-account-profile.e2e-spec.ts`) are known, pre-existing failures — not introduced by this setup.
