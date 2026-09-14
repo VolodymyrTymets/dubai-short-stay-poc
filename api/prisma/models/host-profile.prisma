@@ -1,0 +1,54 @@
+// Adapts SRS v8.4 §B.12 "Owner" onto the existing Host actor table, additively.
+// Phase 1 of the SRS schema adaptation — see docs/features/property-listing-schema/plan.md (R2).
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model HostProfile {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+  hostId    String    @unique
+  Host      Host      @relation(fields: [hostId], references: [id])
+
+  kycStatus            KycStatus @default(PENDING)
+  taxResidency         String?
+  bankAccountVerified  Boolean   @default(false)
+  // Opaque encrypted payload — never stored/logged in plaintext (rule D8).
+  bankAccountEncrypted String?
+
+  KycDocuments HostKycDocument[]
+
+  @@index([kycStatus, deleted])
+}
+
+// 7 document types per SRS §B.12
+enum HostKycDocumentType {
+  PASSPORT
+  EMIRATES_ID
+  TRADE_LICENSE
+  TITLE_DEED
+  EJARI
+  NOC
+  POA
+}
+
+model HostKycDocument {
+  id        String    @id @default(uuid(4))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  deleted   Boolean   @default(false)
+
+  hostProfileId String
+  HostProfile   HostProfile         @relation(fields: [hostProfileId], references: [id])
+  type          HostKycDocumentType
+  fileId        String
+  File          File                @relation(fields: [fileId], references: [id])
+  status        KycStatus           @default(PENDING)
+
+  @@index([hostProfileId, type])
+}
