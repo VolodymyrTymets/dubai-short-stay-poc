@@ -48,18 +48,23 @@ later.
     component work (rule C1).
 
 ## Acceptance criteria
-- [ ] AC1 Given `web/shared/theme.css` exists with the tokens from `designs/dss-theme.css`, when
+- [x] AC1 Given `web/shared/theme.css` exists with the tokens from `designs/dss-theme.css`, when
       `(cd web && yarn build:all)` runs, then both `guest` and `host` build clean (their `@import` resolves).
 - [ ] AC2 Given each shared component file, when it's imported into the guest showcase `App.tsx` and viewed
       at `yarn dev:guest` (`:3000`), then it renders visually matching its section in `Components.html`
       (same colors/spacing/typography from the token layer, no hardcoded hex/px outside `theme.css`).
+      **Not independently verified by the agent — no headless browser was available this session (see PR
+      body). The dev server is live for human confirmation.**
 - [ ] AC3 Given `Button`/`Input`/`Checkbox`/`Radio`/`Switch`/`Tabs`, when used with keyboard only, then
       every interactive state (hover/focus/checked/disabled) is reachable and visibly focused (rule 15).
-  - [ ] AC4 Given `host/src/App.tsx` imports `Logo` and `Button` from `web/shared/components`, when
-        `yarn build:all` runs, then it builds clean — proving the shared path is consumable from both apps
-        (ADR-006's boundary).
-- [ ] AC5 Given `(cd web && yarn lint:all)`, then it passes with no new problems in `web/shared/**` or the
-      touched `App.tsx` files.
+      **Implemented (every interactive element has an explicit `focus-visible`/`peer-focus-visible` ring
+      class) but not driven with an actual keyboard by the agent — same browser-tool gap as AC2.**
+- [x] AC4 Given `host/src/App.tsx` imports `Logo` and `Button` from `web/shared/components`, when
+      `yarn build:all` runs, then it builds clean — proving the shared path is consumable from both apps
+      (ADR-006's boundary).
+- [x] AC5 Given `(cd web && yarn lint:all)`, then it passes with no new problems in `web/shared/**` or the
+      touched `App.tsx` files. (`web/shared/**` isn't actually reached by `yarn lint:all` — see the PR
+      body's flagged gap; verified manually with `npx eslint shared/components --config eslint.config.js`.)
 
 ## Edge cases
 | Case | Expected behaviour | Decided by |
