@@ -3,6 +3,7 @@ import { ButtonsSection } from './showcase/ButtonsSection'
 import { BadgesSection } from './showcase/BadgesSection'
 import { FormControlsSection } from './showcase/FormControlsSection'
 import { SearchSection } from './showcase/SearchSection'
+import { HeaderSection } from './showcase/HeaderSection'
 
 /**
  * Live reference for every web/shared/components primitive, mirroring
@@ -23,6 +24,7 @@ export function ComponentsShowcase() {
       <BadgesSection />
       <FormControlsSection />
       <SearchSection />
+      <HeaderSection />
     </div>
   )
 }
