@@ -2,6 +2,7 @@ import { LogoSection } from './showcase/LogoSection'
 import { ButtonsSection } from './showcase/ButtonsSection'
 import { BadgesSection } from './showcase/BadgesSection'
 import { FormControlsSection } from './showcase/FormControlsSection'
+import { SearchSection } from './showcase/SearchSection'
 
 /**
  * Live reference for every web/shared/components primitive, mirroring
@@ -21,6 +22,7 @@ export function ComponentsShowcase() {
       <ButtonsSection />
       <BadgesSection />
       <FormControlsSection />
+      <SearchSection />
     </div>
   )
 }
