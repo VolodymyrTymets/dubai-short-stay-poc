@@ -1,0 +1,36 @@
+{
+  "enabledPlugins": { "apiko-agent@apiko": true },
+  "extraKnownMarketplaces": {
+    "apiko": { "source": { "source": "github", "repo": "apiko-dev/claude-marketplace" } }
+  },
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Read(./**)", "Grep", "Glob",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git add:*)",
+      "Bash(git switch:*)", "Bash(git commit:*)", "Bash(git fetch:*)", "Bash(git stash:*)",
+      "Bash(yarn install:*)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn test:*)",
+      "Bash(yarn build:*)",
+      "Bash(yarn worker:build:*)",
+      "Bash(yarn format:*)",
+      "Bash(yarn workspace guest lint:*)", "Bash(yarn workspace host lint:*)",
+      "Bash(yarn workspace guest build:*)", "Bash(yarn workspace host build:*)",
+      "mcp__context7__*",
+      "mcp__serena__*"
+    ],
+    "ask": [
+      "Bash(git push:*)", "Bash(gh pr create:*)", "Bash(gh issue:*)",
+      "Bash(yarn add:*)", "Bash(yarn workspace * add:*)",
+      "Bash(yarn prisma-migrate:*)", "Bash(yarn reset-db:*)", "Bash(npx prisma:*)",
+      "Bash(docker:*)", "Bash(docker compose:*)", "Bash(docker-compose:*)",
+      "Bash(yarn codegen:*)",
+      "Edit(api/package.json)", "Edit(web/package.json)", "Edit(web/packages/*/package.json)",
+      "Edit(api/prisma/schema.prisma)", "Edit(api/prisma/models/**)",
+      "Edit(.github/workflows/**)", "Edit(CLAUDE.md)", "Edit(.claude/**)",
+      "mcp__github__create*", "mcp__github__update*", "mcp__github__merge*"
+    ]
+  },
+  "_apiko_note": "Two independent projects (api/, web/), no root package.json — commands run per-directory, so allow/ask entries name real yarn scripts directly instead of a filled-in placeholder. bypassPermissions is not allowed in this repo; if IT deploys managed settings, set disableBypassPermissionsMode there."
+}
