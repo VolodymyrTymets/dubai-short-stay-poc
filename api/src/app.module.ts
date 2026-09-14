@@ -23,6 +23,7 @@ import { AccountProfileModule } from './account-profile/account-profile.module';
 import { AccountModule } from './account/account.module';
 import { AccountRoleModule } from './account-role/account-role.module';
 import { FilesModule } from './files/files.module';
+import { PropertyModule } from './property/property.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { FilesModule } from './files/files.module';
     AccountModule,
     AccountRoleModule,
     FilesModule,
+    PropertyModule,
   ],
   controllers: [AppController],
   providers: [

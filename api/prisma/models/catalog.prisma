@@ -11,8 +11,9 @@ model City {
   country   String    @default("UAE")
   active    Boolean   @default(true)
 
-  Areas Area[]
-  Pois  Poi[]
+  Areas      Area[]
+  Pois       Poi[]
+  Properties Property[]
 
   @@index([createdAt(sort: Desc)])
 }
@@ -31,7 +32,8 @@ model Area {
   insiderData Json?
   active    Boolean   @default(true)
 
-  Pois Poi[]
+  Pois       Poi[]
+  Properties Property[]
 
   @@unique([cityId, slug])
   @@index([createdAt(sort: Desc)])
@@ -79,6 +81,8 @@ model AmenityCatalog {
   category AmenityCategory
   active   Boolean         @default(true)
 
+  Properties PropertyAmenity[]
+
   @@index([category, deleted])
 }
 
@@ -97,6 +101,8 @@ model AccessibilityFeature {
   label    String
   category AccessibilityCategory
   active   Boolean                @default(true)
+
+  Properties PropertyAccessibility[]
 
   @@index([category, deleted])
 }

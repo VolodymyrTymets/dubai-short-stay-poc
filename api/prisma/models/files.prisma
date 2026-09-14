@@ -17,8 +17,9 @@ model File {
 
   CreatedBy Account @relation(fields: [createdById], references: [id])
 
-  AccountProfile AccountProfile[]
+  AccountProfile  AccountProfile[]
   HostKycDocument HostKycDocument[]
+  PropertyPhoto   PropertyPhoto[]
 
   @@index([createdAt(sort: Desc), mimeType, status])
 }
