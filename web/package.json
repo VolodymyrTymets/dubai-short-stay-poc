@@ -1,12 +1,14 @@
 {
-  "name": "my-monorepo",
+  "name": "web",
   "private": true,
+  "packageManager": "yarn@1.22.22",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "dev:guest": "npm run dev -w packages/guest --host 3000",
-    "dev:host": "npm run dev -w packages/host --host 3002",
-    "build:all": "npm run build --workspaces"
+    "dev:guest": "yarn workspace guest dev",
+    "dev:host": "yarn workspace host dev",
+    "build:all": "yarn workspaces run build",
+    "lint:all": "yarn workspaces run lint"
   }
 }
