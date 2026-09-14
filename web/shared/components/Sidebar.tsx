@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { CountBadge } from './Badge'
 
 export type SidebarNavItem = {
   id: string
@@ -17,6 +18,9 @@ export type SidebarProps = {
 
 export function Sidebar({ variant = 'light', groupLabel, items, activeId, onSelect }: SidebarProps) {
   const dark = variant === 'dark'
+  const ring = dark
+    ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gold-500'
+    : 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus'
 
   return (
     <nav className={`w-64 p-4 rounded-2xl flex flex-col gap-1 ${dark ? 'bg-navy-900' : 'bg-cream-200'}`}>
@@ -37,13 +41,13 @@ export function Sidebar({ variant = 'light', groupLabel, items, activeId, onSele
             type="button"
             onClick={() => onSelect?.(item.id)}
             aria-current={active ? 'page' : undefined}
-            className={`flex items-center gap-3 h-10 px-3 rounded-lg text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus ${
+            className={`flex items-center gap-3 h-10 px-3 rounded-lg text-sm ${ring} ${
               dark
                 ? active
-                  ? 'bg-navy-700 text-white font-semibold'
+                  ? 'bg-navy-700 text-ink-inverse font-semibold'
                   : 'text-navy-100 font-medium hover:bg-navy-800'
                 : active
-                  ? 'bg-surface shadow-[0_1px_2px_0_rgb(0_0_0_/_0.05)] text-ink font-semibold'
+                  ? 'bg-surface shadow-pill text-ink font-semibold'
                   : 'text-ink-secondary font-medium hover:bg-surface/60'
             }`}
           >
@@ -56,13 +60,7 @@ export function Sidebar({ variant = 'light', groupLabel, items, activeId, onSele
             </span>
             <span className="flex-1 text-left">{item.label}</span>
             {item.count !== undefined && (
-              <span
-                className={`text-xs font-medium rounded-full px-2 py-0.5 ${
-                  dark ? 'bg-primary text-on-primary' : 'bg-gold-100 text-ink'
-                }`}
-              >
-                {item.count}
-              </span>
+              <CountBadge tone={dark ? 'gold-solid' : 'gold-soft'}>{item.count}</CountBadge>
             )}
           </button>
         )

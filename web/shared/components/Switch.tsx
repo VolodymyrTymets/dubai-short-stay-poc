@@ -18,7 +18,7 @@ export function Switch({ checked, onChange, disabled, ...rest }: SwitchProps) {
       }`}
       {...rest}
     >
-      <span className="w-5 h-5 rounded-full bg-white shadow-pill" />
+      <span className="w-5 h-5 rounded-full bg-surface shadow-pill" />
     </button>
   )
 }

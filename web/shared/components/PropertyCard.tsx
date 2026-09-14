@@ -1,4 +1,5 @@
 import { HeartIcon, StarIcon } from './icons'
+import { CuratedBadge } from './Badge'
 
 export type PropertyCardProps = {
   imageSrc: string
@@ -36,9 +37,7 @@ export function PropertyCard({
         <img src={imageSrc} alt={imageAlt} className="w-full h-full object-cover block" />
         {favoriteBadge && (
           <div className="absolute left-3 top-3">
-            <span className="inline-flex items-center rounded-full bg-surface shadow-pill px-2.5 py-1 text-xs font-medium text-ink whitespace-nowrap">
-              {favoriteBadge}
-            </span>
+            <CuratedBadge>{favoriteBadge}</CuratedBadge>
           </div>
         )}
         <button
@@ -46,13 +45,14 @@ export function PropertyCard({
           onClick={onToggleFavorite}
           aria-label={isFavorited ? 'Remove from favorites' : 'Save to favorites'}
           aria-pressed={isFavorited}
-          className="absolute right-3 top-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white rounded-full"
+          className="absolute right-3 top-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-surface rounded-full"
         >
           <HeartIcon
             filled={isFavorited}
             size={24}
             strokeWidth={2}
-            className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+            /* drop-shadow filter has no matching theme.css token (only box-shadow ones do) — see PR notes */
+            className="text-ink-inverse drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
           />
         </button>
         {photoCount > 1 && (
@@ -60,7 +60,7 @@ export function PropertyCard({
             {Array.from({ length: photoCount }).map((_, i) => (
               <span
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full bg-white ${i === 0 ? 'opacity-100' : 'opacity-60'}`}
+                className={`w-1.5 h-1.5 rounded-full bg-surface ${i === 0 ? 'opacity-100' : 'opacity-60'}`}
               />
             ))}
           </div>

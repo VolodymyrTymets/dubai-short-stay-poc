@@ -15,6 +15,9 @@ export type ButtonProps = {
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus'
+// secondary is a navy fill — a navy ring would be invisible on it, so it rings gold instead.
+const focusRingOnDark =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gold-500'
 
 const sizeClasses: Record<ButtonSize, string> = {
   lg: 'h-12 px-6 text-base gap-2',
@@ -23,11 +26,11 @@ const sizeClasses: Record<ButtonSize, string> = {
 }
 
 const variantClasses: Record<Exclude<ButtonVariant, 'icon'>, string> = {
-  primary: 'bg-primary text-on-primary hover:bg-primary-hover',
-  secondary: 'bg-secondary text-on-secondary hover:bg-secondary-hover',
-  outline: 'bg-surface text-ink border border-line-strong hover:bg-subtle',
-  ghost: 'bg-transparent text-ink hover:bg-subtle',
-  danger: 'bg-surface text-red-700 border border-line-strong hover:bg-red-50',
+  primary: `bg-primary text-on-primary hover:bg-primary-hover ${focusRing}`,
+  secondary: `bg-secondary text-on-secondary hover:bg-secondary-hover ${focusRingOnDark}`,
+  outline: `bg-surface text-ink border border-line-strong hover:bg-subtle ${focusRing}`,
+  ghost: `bg-transparent text-ink hover:bg-subtle ${focusRing}`,
+  danger: `bg-surface text-red-700 border border-line-strong hover:bg-red-50 ${focusRing}`,
 }
 
 export function Button({
@@ -40,13 +43,14 @@ export function Button({
   disabled,
   ...rest
 }: ButtonProps) {
-  const base = `inline-flex items-center justify-center rounded-lg font-semibold whitespace-nowrap transition-colors disabled:opacity-50 disabled:pointer-events-none ${focusRing}`
+  const base =
+    'inline-flex items-center justify-center rounded-lg font-semibold whitespace-nowrap transition-colors disabled:opacity-50 disabled:pointer-events-none'
 
   if (variant === 'icon') {
     return (
       <button
         type="button"
-        className={`${base} w-10 h-10 shrink-0 bg-surface text-ink ${bordered ? 'border border-line' : ''} rounded-full ${className ?? ''}`}
+        className={`${base} ${focusRing} w-10 h-10 shrink-0 bg-surface text-ink ${bordered ? 'border border-line' : ''} rounded-full ${className ?? ''}`}
         disabled={disabled}
         {...rest}
       >

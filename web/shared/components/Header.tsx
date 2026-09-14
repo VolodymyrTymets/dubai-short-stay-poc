@@ -3,6 +3,9 @@ import { SearchBar } from './SearchBar'
 import { Avatar } from './Avatar'
 import { GlobeIcon, MenuIcon } from './icons'
 
+const actionButton =
+  'flex items-center gap-1.5 px-3 py-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus'
+
 export type HeaderProps = {
   where: string
   checkIn: string
@@ -10,20 +13,34 @@ export type HeaderProps = {
   guests: string
   userInitials: string
   onSearch?: () => void
+  onListProperty?: () => void
+  onOpenLocale?: () => void
   onOpenMenu?: () => void
 }
 
-export function Header({ where, checkIn, checkOut, guests, userInitials, onSearch, onOpenMenu }: HeaderProps) {
+export function Header({
+  where,
+  checkIn,
+  checkOut,
+  guests,
+  userInitials,
+  onSearch,
+  onListProperty,
+  onOpenLocale,
+  onOpenMenu,
+}: HeaderProps) {
   return (
     <header className="relative flex items-center justify-between h-20 px-10 bg-surface border-b border-line">
       <Logo size={26} />
       <SearchBar variant="compact" where={where} checkIn={checkIn} checkOut={checkOut} guests={guests} onSearch={onSearch} />
       <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-ink px-3 py-2.5">List your property</span>
-        <div className="flex items-center gap-1.5 px-3 py-2.5">
+        <button type="button" onClick={onListProperty} className={actionButton}>
+          <span className="text-sm font-semibold text-ink">List your property</span>
+        </button>
+        <button type="button" onClick={onOpenLocale} className={actionButton}>
           <GlobeIcon size={18} />
           <span className="text-sm font-medium text-ink">EN · AED</span>
-        </div>
+        </button>
         <button
           type="button"
           onClick={onOpenMenu}

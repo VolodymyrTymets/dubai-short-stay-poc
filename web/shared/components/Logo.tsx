@@ -6,7 +6,7 @@ export type LogoProps = {
 }
 
 export function Logo({ variant = 'light', size = 28, className }: LogoProps) {
-  const textColor = variant === 'dark' ? 'text-white' : 'text-ink'
+  const textColor = variant === 'dark' ? 'text-ink-inverse' : 'text-ink'
 
   return (
     <div className={`flex items-center gap-2.5 ${className ?? ''}`}>

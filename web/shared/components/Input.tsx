@@ -20,15 +20,15 @@ export function Input({ label, helperText, error, prefix, suffix, className, ...
       <div
         className={`flex items-center gap-2.5 h-12 px-3.5 rounded-lg bg-surface border ${
           error ? 'border-red-700' : 'border-line-strong'
-        } focus-within:border-2 focus-within:border-line-focus`}
+        } focus-within:ring-2 focus-within:ring-inset focus-within:ring-line-focus`}
       >
         {prefix && <span className="text-base text-ink-muted">{prefix}</span>}
         <input
           id={id}
-          aria-describedby={helperId}
-          aria-invalid={Boolean(error)}
           className={`flex-1 min-w-0 text-base text-ink placeholder:text-ink-muted bg-transparent outline-none ${className ?? ''}`}
           {...rest}
+          aria-invalid={Boolean(error)}
+          aria-describedby={helperId}
         />
         {suffix && <span className="text-sm text-ink-muted">{suffix}</span>}
       </div>

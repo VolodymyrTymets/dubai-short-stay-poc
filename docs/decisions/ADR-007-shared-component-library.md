@@ -50,6 +50,12 @@ just defers discovering it.
 - Follow-ups: `web/packages/guest/src/App.tsx` becomes a temporary component showcase (the only real-browser
   verification surface available before real screens exist) — see the `ui-component-library` plan's
   Assumptions. It should be replaced by real guest screens once those land, not kept as permanent scaffolding.
+- **Flagged (rule D7), not fixed:** several components carry hardcoded English default copy (`BookingCard`'s
+  "night"/"Check-in"/"Checkout"/"Guests"/"Total"/"Reserve", `SearchBar`'s "Search", `PropertyCard`'s "New",
+  `Badge`'s "Instant Book", `Header`'s "List your property"). `BUSINESS_MODEL.md` explicitly rules out
+  building an i18n layer speculatively, so these are left as plain strings rather than turned into a
+  half-built prop-per-label scheme — D7 says flag this before it ships, not silently build past it, which
+  this note does. When i18n is adopted, these are the extraction points.
 
 ## Revisit when
 A real screen build reveals one of these components' locked shape is wrong for actual data/behaviour needs
