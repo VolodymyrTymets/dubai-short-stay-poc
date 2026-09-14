@@ -1,6 +1,16 @@
 import { Logo } from '../../../shared/components/Logo'
 import { Button, type ButtonSize, type ButtonVariant } from '../../../shared/components/Button'
 import { ArrowRightIcon, HeartIcon, XIcon } from '../../../shared/components/icons'
+import { Badge, StatusBadge, InstantBookBadge, CuratedBadge, type BadgeStatus } from '../../../shared/components/Badge'
+import { Avatar } from '../../../shared/components/Avatar'
+
+const statuses: { status: BadgeStatus; label: string }[] = [
+  { status: 'confirmed', label: 'Confirmed' },
+  { status: 'awaiting', label: 'Awaiting host approval' },
+  { status: 'pending', label: 'Payment pending' },
+  { status: 'cancelled', label: 'Cancelled' },
+  { status: 'draft', label: 'Draft' },
+]
 
 const buttonVariants: ButtonVariant[] = ['primary', 'secondary', 'outline', 'ghost', 'danger']
 const buttonSizes: ButtonSize[] = ['lg', 'md', 'sm']
@@ -69,6 +79,22 @@ export function ComponentsShowcase() {
               <XIcon size={18} />
             </Button>
           </div>
+        </Card>
+      </Section>
+
+      <Section title="Badges">
+        <Card className="flex flex-wrap items-center gap-3">
+          {statuses.map(({ status, label }) => (
+            <StatusBadge key={status} status={status}>
+              {label}
+            </StatusBadge>
+          ))}
+          <InstantBookBadge />
+          <Badge variant="outline">Deluxe Holiday Home</Badge>
+          <Badge variant="solid">Host</Badge>
+          <CuratedBadge>Dubai Favorite</CuratedBadge>
+          <Avatar initials="LA" />
+          <Avatar initials="KP" size={48} ring />
         </Card>
       </Section>
     </div>
