@@ -1,0 +1,61 @@
+/* DubaiShortStay — Tailwind CSS v4 theme (V1 web)
+   Source: SRS §A.1 locked brand tokens (Navy #0D1F35 · Gold #C9A84C · Cream #FAF7F2 · Section #EEF5FB;
+   Cormorant Garamond / DM Sans / DM Mono), expanded into Tailwind scales.
+   Mirrors the variables in the Figma file "Dubai Short Stay — V1 Web" and the design canvas.
+   Usage: @import "tailwindcss"; @import "./dss-theme.css";
+   Load fonts: Cormorant Garamond (500, 600, 500 italic), DM Sans (400–700), DM Mono (400, 500). */
+
+@theme {
+  /* Fonts */
+  --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif; /* headlines, hero copy, prices */
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;         /* all body text & UI */
+  --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace; /* references, codes, eyebrows */
+
+  /* Brand scales */
+  --color-navy-50: #EEF2F7;  --color-navy-100: #D5DEE9; --color-navy-200: #AABBD1; --color-navy-300: #7A93B3;
+  --color-navy-400: #4E6D92; --color-navy-500: #2F4F74; --color-navy-600: #1F3A5A; --color-navy-700: #172D47;
+  --color-navy-800: #12243A; --color-navy-900: #0D1F35; --color-navy-950: #081424;
+
+  --color-gold-50: #FBF7EC;  --color-gold-100: #F5EBCF; --color-gold-200: #EBD7A0; --color-gold-300: #DFC06E;
+  --color-gold-400: #D4AF55; --color-gold-500: #C9A84C; --color-gold-600: #B08D35; --color-gold-700: #8C6E2A;
+  --color-gold-800: #6B5424; --color-gold-900: #4F3E1D;
+
+  --color-cream-50: #FFFDF9; --color-cream-100: #FAF7F2; --color-cream-200: #F2ECE2; --color-cream-300: #E6DDCD;
+  --color-sky-50: #F6FAFD;   --color-sky-100: #EEF5FB;   --color-sky-200: #DCEAF6;
+  /* Neutrals: Tailwind's built-in stone-* scale. Status: built-in green / amber / red / blue. */
+
+  /* Semantic tokens (use these in components) */
+  --color-page: var(--color-cream-100);
+  --color-surface: #FFFFFF;
+  --color-subtle: var(--color-cream-200);
+  --color-section: var(--color-sky-100);
+  --color-inverse: var(--color-navy-900);
+  --color-accent-soft: var(--color-gold-50);
+  --color-ink: var(--color-navy-900);
+  --color-ink-secondary: var(--color-stone-600);
+  --color-ink-muted: var(--color-stone-500);
+  --color-ink-inverse: #FFFFFF;
+  --color-ink-accent: var(--color-gold-700);   /* gold text on light backgrounds — passes AA */
+  --color-ink-link: var(--color-navy-700);
+  --color-line: var(--color-stone-200);
+  --color-line-strong: var(--color-stone-300);
+  --color-line-focus: var(--color-navy-900);
+  --color-line-accent: var(--color-gold-500);
+  --color-primary: var(--color-gold-500);       /* primary CTA fill (SRS: gold for CTAs) */
+  --color-primary-hover: var(--color-gold-600);
+  --color-on-primary: var(--color-navy-900);    /* text on gold */
+  --color-secondary: var(--color-navy-900);
+  --color-secondary-hover: var(--color-navy-800);
+  --color-on-secondary: #FFFFFF;
+  --color-gold: var(--color-gold-500);
+
+  /* Radius (Tailwind defaults kept; listed for reference) — controls rounded-lg, cards rounded-xl/2xl, pills rounded-full */
+
+  /* Shadows */
+  --shadow-card: 0 6px 16px 0 rgb(0 0 0 / 0.12);                                    /* booking card, hero search */
+  --shadow-pill: 0 1px 2px 0 rgb(0 0 0 / 0.08), 0 4px 12px 0 rgb(0 0 0 / 0.05);     /* compact search, chips on photos */
+}
+
+/* Type helpers matching the Figma text styles */
+@utility eyebrow { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-ink-accent); }
+@utility price { font-family: var(--font-serif); font-weight: 600; }
