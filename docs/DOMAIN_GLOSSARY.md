@@ -5,13 +5,18 @@
 
 | Term (client language) | Code identifier | Means exactly | Not to be confused with |
 |------------------------|-----------------|---------------|--------------------------|
-| Guest | `Guest` (`api/prisma/models/actors.prisma`) | A person who books stays; a 1:1 extension of `Account` (`accountId` is unique). | `AccountService.createCustomerAccount` / the `Customers` relation name in `api/src/account/account.service.ts` and `api/src/migrations/items.development/init.customer.migration.ts` — these still say **Customer**, a leftover from before the schema was renamed `Customer` → `Guest` (see the old `Customer`/`Order` tables in `api/prisma/migrations/20260822074028_init/migration.sql`). The rename was never finished in application code — treat "Customer" in code as meaning **Guest**, and finish the rename rather than adding more `Customer` references. |
+| Guest | `Guest` (`api/prisma/models/actors.prisma`) | A person who books stays; a 1:1 extension of `Account` (`accountId` is unique). | Historically `AccountService.createCustomerAccount`/a `Customers` relation name lingered as leftovers from before the schema was renamed `Customer` → `Guest` (see the old `Customer`/`Order` tables in `api/prisma/migrations/20260822074028_init/migration.sql`) — this crashed every e2e test's `DataCooker.beforeAll()` (`InitCustomerMigration` called `this.prisma.customer`, a model that no longer exists) and was fixed in `property-listing-schema` (`AccountService.createGuestAccount`, the `Guest` relation, `AccountRoleType.GUEST`). File/class names containing "customer" (`init.customer.migration.ts`, `InitCustomerMigration`, `assets/customers.ts`) were left as-is — cosmetic only, not a functional trap. |
 | Host | `Host` (`api/prisma/models/actors.prisma`) | A person who lists properties for guests to book; same 1:1-with-`Account` shape as `Guest`. | — |
 | Account | `Account` | The single login identity shared by every role (guest, host, admin). Holds no profile/contact data itself. | `AccountProfile` (contact/personal data) and `AccountIdentity` (auth secrets) — both separate 1:1 tables. |
 | Account role | `AccountRoleType` enum: `GUEST`, `HOST`, `ADMIN`; joined via `AccountOnRole` | The role(s) an `Account` currently holds — one account can hold more than one role over time. `Account.lastAccountRoleId` caches the most recently used one. | `Guest`/`Host` — those are actor profile tables, not the role assignment itself. |
 | Account profile | `AccountProfile` | Contact and personal details (email, phone, name, DOB, SSN, avatar) plus `isPhoneVerified`/`is18YearOld` flags. | `AccountIdentity` — that holds password/OTP hashes and the refresh token, not personal data. |
 | File | `File` + `FileType` (`IMG`, `VIDEO`) + `FileStatus` (`FILE_STATUS_*`) | An uploaded asset (e.g. an avatar or listing photo) stored in S3, tracked through an upload-progress state machine. | — |
 | Deleted (soft delete) | `deleted: Boolean` on most models | Rows are soft-deleted (`deleted = true`), never hard-deleted, so history and relations survive. `DeletedHistory` records deletions separately. | An actual `DELETE` — never issue one against these tables. |
+| Property | `Property` (`api/prisma/models/property.prisma`) | The "Home" listing a `Host` publishes for guests to book — SRS v8.4 §B.0. `ownerId` points at `Host.id`; catalog refs (amenities, accessibility, area, city) are FKs, not raw values. | `Property` will later have sibling product lines `Experience`/`Service` (SRS §B.1-B.2, not yet built) — those are provider-led, not host-owned. |
+| Owner | `Host` + `HostProfile` (`api/prisma/models/host-profile.prisma`) | The SRS's `Owner` entity (§B.12) — same actor as `Host`, extended with KYC status, bank account and tax residency via the additive `HostProfile` table. Not a separate identity. | `HostKycDocument` — the individual uploaded documents (passport, Emirates ID, etc.), not the profile itself. |
+| RatePlan | `RatePlan` (`api/prisma/models/property.prisma`) | The pricing structure attached 1:1 to a `Property` (base rate, seasonal/length-of-stay/occupancy rule sets) — SRS §B.23. | `TDFRateSchedule`/`CommissionSchedule` (SRS §B.50-51, admin-config, not yet built) — those set the *rates DSS charges*, not a single property's price. |
+| Area / City / POI | `Area`, `City`, `Poi` (`api/prisma/models/catalog.prisma`) | Geographic catalog a `Property` locates itself against — SRS §B.4/§B.5/§B.7. `City` is the top-level container; `Area` belongs to a `City`; `Poi` (landmark/beach/mall/dining) belongs to a `City` and optionally an `Area`. | — |
+| Amenity / Accessibility feature | `AmenityCatalog`, `AccessibilityFeature` (`api/prisma/models/catalog.prisma`) | Read-only reference data (48 amenities, 16 accessibility features per the locked SRS catalogs, §B.6/§B.8) that a `Property` tags itself with via `PropertyAmenity`/`PropertyAccessibility` join tables. | — |
 
 ## Naming rules that follow from the above
 - New code says **Guest**, never "Customer" — `Customer` is dead terminology from the pre-rename schema.
@@ -24,6 +29,8 @@
 | `FileType` | `IMG`, `VIDEO` | The media kind of an uploaded `File`. |
 | `FileStatus` | `FILE_STATUS_CREATED`, `FILE_STATUS_UPLOAD_IN_PROGRESS`, `FILE_STATUS_UPLOAD_COMPLETED`, `FILE_STATUS_UPLOAD_FAILED` | Where an upload is in its lifecycle. |
 
-Property/listing/booking terms (`Reservation`, `Listing`, `Rate`, etc., visible in `doc/designs/` mockup
-names like `HostListings.html`, `HostPricing.html`) don't exist in the Prisma schema yet — add them here
-the moment the first migration introduces them.
+`Property` and `RatePlan` now exist (see the table above). Booking/transactional terms (`Booking`,
+`Payment`, `Refund`, `Review`, `DisputeCase`, etc., visible in `doc/designs/` mockup names like
+`TripDetail.html`, `HostEarnings.html`) don't exist in the Prisma schema yet — add them here the moment
+the migration that introduces them lands (see `docs/features/property-listing-schema/spec.md`'s
+out-of-scope list for the planned phasing).

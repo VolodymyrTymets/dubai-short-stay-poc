@@ -105,11 +105,11 @@ owner-scoped list query outside the frozen `pagination.service.ts` — R5 introd
 - risk: none new — reuses the existing JWT auth guard/context pattern from `AuthModule`.
 
 ## Docs to update in this PR
-- [ ] `docs/features/property-listing-schema/spec.md` (acceptance criteria checked off)
-- [ ] `docs/ARCHITECTURE.md` — new `api/src/property` module row; new models in "Where data truth lives"
-- [ ] `docs/DOMAIN_GLOSSARY.md` — Property, Owner (= `Host` + `HostProfile`), RatePlan, Area, City, POI,
+- [x] `docs/features/property-listing-schema/spec.md` (acceptance criteria checked off)
+- [x] `docs/ARCHITECTURE.md` — new `api/src/property` module row; new models in "Where data truth lives"
+- [x] `docs/DOMAIN_GLOSSARY.md` — Property, Owner (= `Host` + `HostProfile`), RatePlan, Area, City, POI,
       Amenity, Accessibility feature
-- [ ] `docs/decisions/ADR-007-property-domain-schema.md` — records the additive-relation approach onto
+- [x] `docs/decisions/ADR-007-property-domain-schema.md` — records the additive-relation approach onto
       `Host`/`Guest` and the `Json`-vs-normalized call for `RatePlan`
 
 ## Risks

@@ -49,21 +49,23 @@ Review) will join against.
     `Booking` (phase 2); phase 1 always discloses the address to the owner and admin only.
 
 ## Acceptance criteria
-- [ ] AC1 The 5 catalog models exist, migrated, with the locked reference counts documented (48
+- [x] AC1 The 5 catalog models exist, migrated, with the locked reference counts documented (48
       amenities' categories, 16 accessibility categories) even though seed rows are a follow-up.
-- [ ] AC2 A `Host` can have a `HostProfile` (KYC status, bank account, tax residency) without any
+- [x] AC2 A `Host` can have a `HostProfile` (KYC status, bank account, tax residency) without any
       existing field on `Account`/`AccountProfile`/`AccountIdentity`/`Host`/`Guest` changing — only a
       new additive back-relation field appears on `Host`.
-- [ ] AC3 `Property` persists every field from SRS §B.0 relevant to phase-1 scope (identity, content,
+- [x] AC3 `Property` persists every field from SRS §B.0 relevant to phase-1 scope (identity, content,
       capacity, location, pricing snapshot fields owned by Property itself, catalog refs, owner ref,
       cancellation policy, curation, lifecycle) with `ownerId` pointing at `Host.id`.
-- [ ] AC4 `RatePlan` persists the pricing structure from SRS §B.23, 1:1 with `Property`.
-- [ ] AC5 A host account can call `createProperty` then `updateProperty` then `myProperties` via a real
+- [x] AC4 `RatePlan` persists the pricing structure from SRS §B.23, 1:1 with `Property`.
+- [x] AC5 A host account can call `createProperty` then `updateProperty` then `myProperties` via a real
       GraphQL request against the running dev server and see the row change; a non-owner cannot fetch
-      another host's non-live property.
-- [ ] AC6 `api/schema.gql` regenerates cleanly; the existing `AccountEntity`/`FileEntity`/auth
-      operations in it are byte-for-byte unchanged.
-- [ ] AC7 `docs/DOMAIN_GLOSSARY.md` gains rows for every new user-facing term (Property, Host operating
+      another host's non-live property. Verified via curl against `yarn start:dev` — see the R3-R5
+      commit message for the full sequence, including the KYC-gate rejection and success paths.
+- [x] AC6 `api/schema.gql` regenerates cleanly; the existing `AccountEntity`/`FileEntity`/auth
+      operations in it are byte-for-byte unchanged. Verified: `git diff api/schema.gql` shows only
+      additive hunks.
+- [x] AC7 `docs/DOMAIN_GLOSSARY.md` gains rows for every new user-facing term (Property, Host operating
       as Owner, RatePlan, Area, City, POI, Amenity, Accessibility feature).
 
 ## Edge cases
