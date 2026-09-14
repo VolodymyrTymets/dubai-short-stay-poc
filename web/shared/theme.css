@@ -59,3 +59,7 @@
 /* Type helpers matching the Figma text styles */
 @utility eyebrow { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-ink-accent); }
 @utility price { font-family: var(--font-serif); font-weight: 600; }
+
+@source "./components/**/*.{html,js,jsx,ts,tsx}";
+@source "../packages/guest/src/**/*.tsx";
+@source "../packages/host/src/**/*.tsx";
