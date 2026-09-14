@@ -1,0 +1,8 @@
+# OS / editor
+.DS_Store
+**/.DS_Store
+.idea/
+
+# Claude Code local state (never share across machines/agents)
+.claude/settings.local.json
+.claude/.state/

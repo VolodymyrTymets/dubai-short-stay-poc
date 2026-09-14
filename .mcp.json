@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "context7": { "command": "npx", "args": ["-y", "@upstash/context7-mcp@latest"], "type": "stdio" },
+    "serena": { "command": "npx", "args": ["-y", "serena-mcp@latest", "--project", "."], "type": "stdio" }
+  },
+  "_apiko_notes": [
+    "context7 = version-correct library docs for NestJS/Prisma/Apollo/React (kills invented APIs). serena = language-server-backed code navigation across the two projects.",
+    "Not added yet, add only if the need shows up: a Prisma MCP/plugin for api/'s schema, or Playwright MCP once web/ gets real screens and browser-driven verification/e2e authoring is needed.",
+    "GitHub (PRs, issues, CI) is recommended: claude plugin install github@claude-plugins-official",
+    "Policy: <=5 active servers per session; a CLI beats an MCP server when it does the same job; secrets only via ${ENV_VAR}; every server recorded in docs/AGENT_TOOLING.md."
+  ]
+}
