@@ -28,22 +28,22 @@ scaffolding for wiring the next real flow into either app.
     (`web/shared/theme.css` already has every color this scaffolding uses, confirmed by grep).
 
 ## Acceptance criteria
-- [ ] AC1 `guest`'s `Layout` renders the shared `Header` (`web/shared/components/Header.tsx`, reused
+- [x] AC1 `guest`'s `Layout` renders the shared `Header` (`web/shared/components/Header.tsx`, reused
       unchanged) plus a new `guest`-local `Footer`, matching
       `designs/dss-v1-web-mockups-html/Main.html`'s header/footer chrome — no page body.
-- [ ] AC2 `host`'s `Layout` renders the shared `Sidebar` (`web/shared/components/Sidebar.tsx`, reused
+- [x] AC2 `host`'s `Layout` renders the shared `Sidebar` (`web/shared/components/Sidebar.tsx`, reused
       unchanged, `variant="light"`) plus a new `host`-local `Topbar`, matching
       `designs/dss-v1-web-mockups-html/HostListings.html`'s sidebar/topbar chrome — no page body, no
       footer (that mockup has none).
-- [ ] AC3 `guest` has three routed, empty pages — `/` (Home), `/sign-in` (Sign In), `/sign-up`
+- [x] AC3 `guest` has three routed, empty pages — `/` (Home), `/sign-in` (Sign In), `/sign-up`
       (Sign Up) — each rendering a `// TODO:` comment only, nested under `Layout`.
-- [ ] AC4 `host` has the same three routed, empty pages under its own `Layout`.
-- [ ] AC5 `yarn build` (`tsc -b && vite build`) passes for both `guest` and `host` with `react-router`
+- [x] AC4 `host` has the same three routed, empty pages under its own `Layout`.
+- [x] AC5 `yarn build` (`tsc -b && vite build`) passes for both `guest` and `host` with `react-router`
       as a real dependency (not just devDependency/type-only).
-- [ ] AC6 Both apps' dev servers (`yarn dev:guest` / `yarn dev:host`) serve all three routes in a real
+- [x] AC6 Both apps' dev servers (`yarn dev:guest` / `yarn dev:host`) serve all three routes in a real
       browser with no console errors, and the chrome visually matches the referenced mockup's
       header/footer or sidebar/topbar.
-- [ ] AC7 `guest`'s existing `ComponentsShowcase` stays reachable at a dev-only route (`/dev/components`)
+- [x] AC7 `guest`'s existing `ComponentsShowcase` stays reachable at a dev-only route (`/dev/components`)
       instead of being deleted or silently orphaned.
 
 ## Edge cases

@@ -66,7 +66,12 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
 
 ## Known constraints and landmines
 - `api/src/common/pagination.service.ts` / `prismacashing.service.ts` index Prisma by a raw `collection: string` — legacy generic pattern, don't extend it (see CLAUDE.md project rules).
-- `guest`/`host` are still scaffold-stage — no real screens, routing, or forms yet, only the placeholder/smoke-test `App.tsx`. `web/shared/components/` now has the full design-system component set (ADR-007) ready to consume; `frontend-react.md`'s rules will start mattering fully once a real screen imports them.
+- `guest`/`host` each have a routed shell now (ADR-008, `react-router` in data mode): a `Layout` per app
+  (`guest`: shared `Header` + a `guest`-local `Footer`; `host`: shared `Sidebar` + a `host`-local `Topbar`,
+  no footer) wraps `<Outlet/>`, with `Home`/`Sign In`/`Sign Up` routed as empty stub pages — no real
+  screen content yet. `web/shared/components/` has the full design-system component set (ADR-007) ready
+  to consume; `frontend-react.md`'s rules start mattering fully once a real screen is built inside these
+  shells. `guest`'s prior `ComponentsShowcase` entry point lives at the sibling `/dev/components` route.
 - `yarn start:dev`, `yarn test:e2e` (via full `AppModule`) and `yarn codegen` need live Postgres/PostGIS + Redis; `yarn test` (unit) and the rest of `yarn test:e2e` run standalone against in-memory PGlite.
 - No CI existed before this PR; `api/`'s lint (55 pre-existing problems) and one placeholder e2e test (`expect(true).toEqual(false)` in `update-account-profile.e2e-spec.ts`) are known, pre-existing failures — not introduced by this setup.
 - `yarn test:e2e`'s default (parallel) Jest workers can flake under load as the e2e suite grows — each worker boots its own in-memory PGlite + full `AppModule` (BullMQ/Redis included), and the default 5000ms hook timeout can be exceeded by CPU contention alone, not a real bug. `yarn test:e2e --runInBand` runs serially and is the reliable way to get a clean signal; it can hang on exit due to an unrelated pre-existing open-handle issue (Jest logs "did not exit one second after the test run has completed") — the test results themselves print before that hang, so read those and don't wait for the process to exit on its own.
