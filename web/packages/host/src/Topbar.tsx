@@ -1,14 +1,14 @@
 import { Avatar } from '../../../shared/components/Avatar'
+import { Account } from '../../../shared/components/Account'
 import { SearchIcon, BellIcon } from '../../../shared/components/icons'
 
 export type TopbarProps = {
-  userInitials: string
   onSearch?: () => void
   onSwitchToTravelling?: () => void
   onOpenNotifications?: () => void
 }
 
-export function Topbar({ userInitials, onSearch, onSwitchToTravelling, onOpenNotifications }: TopbarProps) {
+export function Topbar({ onSearch, onSwitchToTravelling, onOpenNotifications }: TopbarProps) {
   return (
     <header className="flex items-center justify-between h-[72px] px-10 border-b border-line bg-surface">
       {/* TODO(volodymyr, web-page-layout): real text input + results once search is built. */}
@@ -36,7 +36,7 @@ export function Topbar({ userInitials, onSearch, onSwitchToTravelling, onOpenNot
         >
           <BellIcon size={18} className="text-ink" />
         </button>
-        <Avatar initials={userInitials} size={36} />
+        <Account size={36}>{(initials) => <Avatar initials={initials} size={36} />}</Account>
       </div>
     </header>
   )

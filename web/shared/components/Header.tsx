@@ -1,6 +1,7 @@
 import { Logo } from './Logo'
 import { SearchBar } from './SearchBar'
 import { Avatar } from './Avatar'
+import { Account } from './Account'
 import { GlobeIcon, MenuIcon } from './icons'
 
 const actionButton =
@@ -11,7 +12,6 @@ export type HeaderProps = {
   checkIn: string
   checkOut: string
   guests: string
-  userInitials: string
   onSearch?: () => void
   onListProperty?: () => void
   onOpenLocale?: () => void
@@ -23,7 +23,6 @@ export function Header({
   checkIn,
   checkOut,
   guests,
-  userInitials,
   onSearch,
   onListProperty,
   onOpenLocale,
@@ -41,15 +40,19 @@ export function Header({
           <GlobeIcon size={18} />
           <span className="text-sm font-medium text-ink">EN · AED</span>
         </button>
-        <button
-          type="button"
-          onClick={onOpenMenu}
-          aria-label="Open menu"
-          className="flex items-center gap-3 h-11 pl-3.5 pr-1.5 rounded-full border border-line-strong bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus"
-        >
-          <MenuIcon size={18} />
-          <Avatar initials={userInitials} size={32} />
-        </button>
+        <Account size={32}>
+          {(initials) => (
+            <button
+              type="button"
+              onClick={onOpenMenu}
+              aria-label="Open menu"
+              className="flex items-center gap-3 h-11 pl-3.5 pr-1.5 rounded-full border border-line-strong bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus"
+            >
+              <MenuIcon size={18} />
+              <Avatar initials={initials} size={32} />
+            </button>
+          )}
+        </Account>
       </div>
       <div className="absolute left-0 right-0 -bottom-px h-0.5 bg-gold" />
     </header>

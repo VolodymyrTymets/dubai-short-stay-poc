@@ -55,7 +55,7 @@ export function Layout() {
         </div>
       </aside>
       <div className="flex-1 min-w-0 flex flex-col">
-        <Topbar userInitials="KP" />
+        <Topbar />
         <main className="flex-1">
           <Outlet />
         </main>
