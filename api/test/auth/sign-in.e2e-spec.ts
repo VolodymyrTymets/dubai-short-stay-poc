@@ -35,15 +35,12 @@ describe('Sign in with password (e2e)', () => {
     await app.init();
   });
 
-  async function createAccountWithPassword(
-    phoneNumber: string,
-    password: string,
-  ) {
+  async function createAccountWithPassword(email: string, password: string) {
     const account = await prismaService.account.create({
       data: { lastLoginAt: new Date() },
     });
     await prismaService.accountProfile.create({
-      data: { accountId: account.id, phoneNumber },
+      data: { accountId: account.id, email },
     });
     const passwordHash = await hash(password, 10);
     await prismaService.accountIdentity.create({
@@ -52,17 +49,17 @@ describe('Sign in with password (e2e)', () => {
     return account;
   }
 
-  it('Should sign in with a valid phone number and password', async () => {
-    const phoneNumber = '+12125557001';
+  it('Should sign in with a valid email and password', async () => {
+    const email = 'sign-in-e2e-1@example.com';
     const password = 'correct-password';
-    const account = await createAccountWithPassword(phoneNumber, password);
+    const account = await createAccountWithPassword(email, password);
 
     const response = (await request(app.getHttpServer())
       .post('/graphql')
       .send({
         query: `mutation {
           signIn(signInPasswordInput: {
-            phoneNumber: "${phoneNumber}",
+            email: "${email}",
             password: "${password}"
           }) {
             accessToken
@@ -88,7 +85,7 @@ describe('Sign in with password (e2e)', () => {
             id
             AccountProfile {
               id
-              phoneNumber
+              email
               isPhoneVerified
             }
           }
@@ -97,29 +94,29 @@ describe('Sign in with password (e2e)', () => {
       .expect(200)) as GraphQLResponseType<{
       account: {
         id: string;
-        AccountProfile: { phoneNumber: string; isPhoneVerified: boolean };
+        AccountProfile: { email: string; isPhoneVerified: boolean };
       };
     }>;
 
     expect(accountResponse.body.data.account.id).toEqual(account.id);
-    expect(
-      accountResponse.body.data.account.AccountProfile.phoneNumber,
-    ).toEqual(phoneNumber);
+    expect(accountResponse.body.data.account.AccountProfile.email).toEqual(
+      email,
+    );
     expect(
       accountResponse.body.data.account.AccountProfile.isPhoneVerified,
     ).toEqual(false);
   });
 
   it('Should not sign in with a wrong password', async () => {
-    const phoneNumber = '+12125557002';
-    await createAccountWithPassword(phoneNumber, 'correct-password');
+    const email = 'sign-in-e2e-2@example.com';
+    await createAccountWithPassword(email, 'correct-password');
 
     const response = (await request(app.getHttpServer())
       .post('/graphql')
       .send({
         query: `mutation {
           signIn(signInPasswordInput: {
-            phoneNumber: "${phoneNumber}",
+            email: "${email}",
             password: "wrong-password"
           }) {
             accessToken
@@ -143,7 +140,7 @@ describe('Sign in with password (e2e)', () => {
       .send({
         query: `mutation {
           signIn(signInPasswordInput: {
-            phoneNumber: "+12125557003",
+            email: "sign-in-e2e-3@example.com",
             password: "whatever-password"
           }) {
             accessToken
@@ -161,13 +158,13 @@ describe('Sign in with password (e2e)', () => {
     );
   });
 
-  it('Should return a validation error for an invalid phone number', async () => {
+  it('Should return a validation error for an invalid email', async () => {
     const response = (await request(app.getHttpServer())
       .post('/graphql')
       .send({
         query: `mutation {
           signIn(signInPasswordInput: {
-            phoneNumber: "invalid-phone",
+            email: "invalid-email",
             password: "whatever-password"
           }) {
             accessToken
@@ -181,7 +178,7 @@ describe('Sign in with password (e2e)', () => {
     const errorMessages =
       response.body.errors?.[0].extensions?.originalError?.message;
     expect(errorMessages).toBeDefined();
-    expect(errorMessages?.[0]).toMatch(/phone number/i);
+    expect(errorMessages?.[0]).toMatch(/email/i);
   });
 
   it('Should return a validation error for a too-short password', async () => {
@@ -190,7 +187,7 @@ describe('Sign in with password (e2e)', () => {
       .send({
         query: `mutation {
           signIn(signInPasswordInput: {
-            phoneNumber: "+12125557004",
+            email: "sign-in-e2e-4@example.com",
             password: "short"
           }) {
             accessToken

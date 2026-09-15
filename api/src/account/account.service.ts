@@ -66,4 +66,29 @@ export class AccountService extends PrismaCashingService {
 
     return account;
   }
+
+  async createGuestAccountByEmail(email: string) {
+    const account = await this.prismaService.account.create({
+      data: {
+        lastLoginAt: new Date(),
+        AccountProfile: {
+          create: {
+            email,
+          },
+        },
+        Guest: {
+          create: {
+            createdAt: new Date(),
+          },
+        },
+      },
+    });
+
+    await this.accountRoleService.addAccountToRole(
+      account.id,
+      AccountRoleType.GUEST,
+    );
+
+    return account;
+  }
 }

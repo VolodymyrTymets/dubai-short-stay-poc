@@ -279,16 +279,16 @@ input SignInInput {
 }
 
 input SignInPasswordInput {
-  """phoneNumber"""
-  phoneNumber: String!
+  """email"""
+  email: String!
 
   """password"""
   password: String!
 }
 
 input SignUpInput {
-  """phoneNumber"""
-  phoneNumber: String!
+  """email"""
+  email: String!
 
   """password"""
   password: String!
