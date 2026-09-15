@@ -1,20 +1,11 @@
-import { Logo } from '../../../shared/components/Logo'
-import { Button } from '../../../shared/components/Button'
+import { RouterProvider } from 'react-router/dom'
+import { router } from './router'
 
-/**
- * Smoke test proving web/shared/components resolves from `host`, not just
- * `guest` — ADR-006's "only web/shared/ may be imported by both apps"
- * boundary. The full component set is showcased from `guest` (see
- * guest/src/ComponentsShowcase.tsx).
- */
+// The routed Layout (src/Layout.tsx) imports web/shared/components/Sidebar and Logo,
+// which already proves web/shared/ resolves from `host` — the prior standalone smoke
+// test this file used to render is superseded.
 function App() {
-  return (
-    <main className="min-h-screen bg-page flex flex-col items-center justify-center gap-6">
-      <Logo />
-      <h1 className="font-serif text-4xl text-ink">Dubai Short Stay — Host</h1>
-      <Button variant="primary">List your property</Button>
-    </main>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App
