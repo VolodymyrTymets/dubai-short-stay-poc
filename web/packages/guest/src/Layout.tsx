@@ -6,7 +6,7 @@ export function Layout() {
   return (
     <div className="min-h-screen flex flex-col bg-page">
       <Header
-        // TODO: wire these to real search state once a search screen/query exists.
+        // TODO(volodymyr, web-page-layout): wire these to real search state once a search screen/query exists.
         where="Anywhere"
         checkIn="Add dates"
         checkOut="Add dates"

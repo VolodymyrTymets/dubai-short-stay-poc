@@ -3,7 +3,6 @@ import { Layout } from './Layout'
 import { HomePage } from './pages/HomePage'
 import { SignInPage } from './pages/SignInPage'
 import { SignUpPage } from './pages/SignUpPage'
-import { ComponentsShowcase } from './ComponentsShowcase'
 
 export const router = createBrowserRouter([
   {
@@ -16,5 +15,9 @@ export const router = createBrowserRouter([
   },
   // Not part of the routed shell — keeps the existing component-library preview reachable
   // outside the guest chrome instead of deleting it (see docs/features/web-page-layout/spec.md AC7).
-  { path: 'dev/components', Component: ComponentsShowcase },
+  // Lazy-loaded so the dev-only preview doesn't ship in the initial bundle.
+  {
+    path: 'dev/components',
+    lazy: async () => ({ Component: (await import('./ComponentsShowcase')).ComponentsShowcase }),
+  },
 ])

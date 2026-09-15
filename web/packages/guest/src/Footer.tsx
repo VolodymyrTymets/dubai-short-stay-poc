@@ -38,6 +38,8 @@ export function Footer() {
         </div>
       </div>
       <div className="h-px bg-navy-600 mt-12 mb-6" />
+      {/* TODO(volodymyr, web-page-layout): entity name/DET licence copied verbatim from the mockup —
+          confirm the real operator name and licence number with the product owner before this ships. */}
       <div className="flex justify-between items-center">
         <span className="text-xs text-navy-300">
           © 2026 Keys Please Holiday Homes Rental Dubai LLC · DET Licence #727937 · Prices include 5%

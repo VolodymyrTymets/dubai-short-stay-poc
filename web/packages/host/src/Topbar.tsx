@@ -3,17 +3,23 @@ import { SearchIcon, BellIcon } from '../../../shared/components/icons'
 
 export type TopbarProps = {
   userInitials: string
+  onSearch?: () => void
   onSwitchToTravelling?: () => void
   onOpenNotifications?: () => void
 }
 
-export function Topbar({ userInitials, onSwitchToTravelling, onOpenNotifications }: TopbarProps) {
+export function Topbar({ userInitials, onSearch, onSwitchToTravelling, onOpenNotifications }: TopbarProps) {
   return (
     <header className="flex items-center justify-between h-[72px] px-10 border-b border-line bg-surface">
-      <div className="flex items-center gap-2.5 w-[380px] h-10 px-3.5 rounded-full bg-subtle">
+      {/* TODO(volodymyr, web-page-layout): real text input + results once search is built. */}
+      <button
+        type="button"
+        onClick={onSearch}
+        className="flex items-center gap-2.5 w-[380px] h-10 px-3.5 rounded-full bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus"
+      >
         <SearchIcon size={16} className="text-ink-muted shrink-0" />
         <span className="text-sm text-ink-muted">Search reservations, guests, listings</span>
-      </div>
+      </button>
       <div className="flex items-center gap-3">
         <button
           type="button"

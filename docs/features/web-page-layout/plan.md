@@ -22,8 +22,9 @@ in R1 — the same treatment `ui-component-library` gave ADR-007 before its firs
 - boundary: none — no GraphQL/API surface touched.
 - data: none.
 - generated output: none regenerated.
-- shared surface: `web/shared/components/icons.tsx` gains 8 new icon exports (Home, Listings, Calendar,
-  Reservations, Messages, Earnings, Verification, Settings — SVG paths taken directly from
+- shared surface: `web/shared/components/icons.tsx` gains 9 new icon exports (Home, Listings, Calendar,
+  Reservations, Messages, Earnings, Verification, Settings, Bell — the last added during implementation
+  for `Topbar`'s notification icon, not caught in the original count — SVG paths taken directly from
   `HostListings.html`, same stroke-icon pattern as the file's existing exports) for `host`'s `Sidebar`
   nav items. Purely additive — no existing icon changes shape or name.
 
@@ -52,11 +53,11 @@ in R1 — the same treatment `ui-component-library` gave ADR-007 before its firs
 - risk: none
 
 ### R4 — `host` chrome: `Topbar` + `Layout` + new icons (M)
-- files: `web/shared/components/icons.tsx` (change: add the 8 new icon exports listed above), `web/packages/host/src/Topbar.tsx` (new — search pill + "Switch to travelling" + notification icon + avatar, from `HostListings.html`'s topbar), `web/packages/host/src/Layout.tsx` (new — shared `Sidebar` with `variant="light"` and the `HostListings.html` nav items (Today/Listings/Calendar/Reservations/Messages (2)/Earnings/Verification/Settings), `Topbar`, then `<Outlet/>`; no footer — `HostListings.html` has none)
-- layer: web UI — icon additions are `web/shared/`, `Topbar`/`Layout` are `host`-local
+- files: `web/shared/components/icons.tsx` (change: add the 9 new icon exports listed above), `web/shared/components/Sidebar.tsx` (change: added optional `bare`/`ariaLabel` props during implementation — self-review found the component's own fixed `w-64`/`p-4`/`rounded-2xl` box, nested inside `host`'s own `aside`, overflowed the aside's content width and didn't match `HostListings.html`'s single flat sidebar column; both props are additive and default to the component's original behavior), `web/packages/host/src/Topbar.tsx` (new — search pill + "Switch to travelling" + notification icon + avatar, from `HostListings.html`'s topbar), `web/packages/host/src/Layout.tsx` (new — the `aside` itself now owns width/padding/background/border, holding two `bare` `Sidebar`s for the `HostListings.html` nav items (Today/Listings/Calendar/Reservations/Messages (2)/Earnings/Verification/Settings), `Topbar`, then `<Outlet/>`; no footer — `HostListings.html` has none)
+- layer: web UI — icon/`Sidebar` additions are `web/shared/`, `Topbar`/`Layout` are `host`-local
 - test: none (no test runner configured for `web/`)
 - executed how: `yarn dev:host`, open `http://localhost:3002`, confirm sidebar/topbar visually match `HostListings.html`'s chrome, no console errors — screenshot
-- risk: none — icons follow the file's existing stroke-icon pattern exactly
+- risk: none — icons follow the file's existing stroke-icon pattern exactly; `Sidebar`'s new props are opt-in and don't change its default rendering
 
 ### R5 — `host` routing + stub pages (S)
 - files: `web/packages/host/src/pages/HomePage.tsx`, `SignInPage.tsx`, `SignUpPage.tsx` (new — `// TODO:` stubs), `web/packages/host/src/router.tsx` (new — `Layout` parent, `index`/`sign-in`/`sign-up` children), `web/packages/host/src/App.tsx` (change: renders `<RouterProvider router={router} />`; the file's prior role as a "shared-import smoke test" is superseded — `Layout`/`Sidebar` already prove `web/shared/` resolves from `host`)
