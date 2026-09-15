@@ -52,8 +52,8 @@ See the command map in `CLAUDE.md` — that is the canonical list.
   (creates + applies a migration) and `yarn prisma-gen` (regenerates the client) — the Prisma client under
   `api/generated/prisma/` will otherwise be stale.
 - After touching a resolver/entity's shape, restart `yarn start:dev` if `api/schema.gql` doesn't pick up
-  the change, then re-run `yarn codegen` in whichever `web/` package consumes it — `src/gql/**` is stale
-  until you do.
+  the change, then re-run `yarn codegen` from `web/` (a single shared run, not per-package) —
+  `web/shared/api/generated.graphql.tsx` is stale until you do.
 - `yarn test` and `yarn test:e2e` need **no** Docker/Redis — they run against PGlite in-memory Postgres
   with PostGIS via `DataCooker` (`api/test/utils/DataCooker/DataCooker.ts`). Only `yarn start:dev`/
   `worker:start:dev` and `yarn codegen` need the real Postgres+Redis stack.

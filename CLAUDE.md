@@ -26,7 +26,7 @@ this is the real command to run whichever side you touched, and the one the DoD 
 | full stack, live dev (Docker) | `docker-compose watch` (repo root) — syncs source changes into running containers |
 | e2e | `(cd api && yarn test:e2e)` |
 | db migrate (local only) | `(cd api && yarn prisma-migrate)` |
-| codegen (GraphQL types) | `(cd web/packages/guest && yarn codegen); (cd web/packages/host && yarn codegen)` |
+| codegen (GraphQL types) | `(cd web && yarn codegen)` |
 | format | `(cd api && yarn format)` |
 
 No standalone `typecheck` script exists: `api/`'s `build` (`nest build`) and `web/`'s `build` (`tsc -b && vite
@@ -110,7 +110,7 @@ before claiming a passing evidence block for a change that touches them.
 
 - **S1** `.claude/rules/backend-core.md` applies to all of `api/src`. `backend-nestjs.md` and `api-graphql.md` **add** to it and never override it. If they appear to conflict, core wins and you raise it.
 - **S2** Business logic never sees the transport. No `req`/`res`/GraphQL `context` below the service layer.
-- **S3** `api/prisma/schema.prisma` (+ `api/prisma/models/*.prisma`) is the DB source of truth; `api/schema.gql` is Apollo's auto-generated GraphQL contract — never hand-edit either, they regenerate from `yarn prisma-gen` / server start. `web/`'s GraphQL client types are generated per-package into `src/gql/` by `yarn codegen` from the live server — also never hand-edited.
+- **S3** `api/prisma/schema.prisma` (+ `api/prisma/models/*.prisma`) is the DB source of truth; `api/schema.gql` is Apollo's auto-generated GraphQL contract — never hand-edit either, they regenerate from `yarn prisma-gen` / server start. `web/`'s GraphQL client types are generated once, shared by both apps, into `web/shared/api/generated.graphql.tsx` by `yarn codegen` (run from `web/`) from the live server — also never hand-edited.
 - **S4** Server schema, resolvers and every web consumer change in the **same PR**; `yarn codegen` output proves it.
 
 ## Project-specific rules (confirmed during `/setup`, 2026-09-14)

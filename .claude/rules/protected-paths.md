@@ -36,7 +36,8 @@ match this repo's nested layout (`**/` prefix, or the real path from the root).
 api/generated/**
 api/generated/prisma/**
 api/schema.gql
-web/packages/*/src/gql/**
+web/shared/api/generated.graphql.tsx
+web/introspection.json
 api/prisma/migrations/**/migration.sql
 api/prisma/migrations/migration_lock.toml
 api/yarn.lock
@@ -61,7 +62,7 @@ api/tsconfig*.json
 web/packages/*/tsconfig*.json
 api/prisma/schema.prisma
 api/prisma/models/**
-web/packages/*/codegen.ts
+web/codegen.ts
 api/eslint.config.mjs
 web/eslint.config.js
 web/packages/*/eslint.config.js
