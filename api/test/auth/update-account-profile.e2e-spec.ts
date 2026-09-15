@@ -165,5 +165,5 @@ describe('Update account profile (e2e)', () => {
     const phoneNumber = '+12125551231';
     const { accessToken } = await signInService.signInOtp(phoneNumber);
     expect(true).toEqual(true);
-  })
+  });
 });

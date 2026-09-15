@@ -1,12 +1,11 @@
-import { useMutation } from '@apollo/client'
 import { useNavigate } from 'react-router'
 import { AuthCard } from '../../../../shared/components/AuthCard'
 import { setAccessToken } from '../../../../shared/api/token'
-import { SignUpDocument } from '../gql/graphql'
+import { useSignUpMutation } from "../../../../shared/api/generated.graphql";
 
 export function SignUpPage() {
   const navigate = useNavigate()
-  const [signUp, { loading, error }] = useMutation(SignUpDocument)
+  const [signUp, { loading, error }] = useSignUpMutation();
 
   async function handleSubmit(fields: { email: string; password: string }) {
     try {

@@ -22,13 +22,13 @@ build context of `web/` so `web/shared/**` is available at build time). `api/Doc
 ## Where data truth lives
 - **PostgreSQL + PostGIS** (via Prisma, `api/prisma/schema.prisma` + `api/prisma/models/*.prisma`) is authoritative for all domain data: `Account`, `AccountProfile`, `AccountRole`/`AccountOnRole`, `AccountIdentity`, `Guest`, `Host`, `File`, plus system tables `Migration`, `DeletedHistory`. PostGIS is enabled but not yet used by any model — `Property.lat`/`lng` are plain `Float` columns for now (see ADR-007). Phase 1 of the SRS-to-Prisma migration (`docs/features/property-listing-schema/`) added the Property/Listing domain: `City`/`Area`/`Poi`/`AmenityCatalog`/`AccessibilityFeature` (catalog reference data), `HostProfile`/`HostKycDocument` (the SRS `Owner` entity, additively hung off `Host`), and `Property`/`PropertyAmenity`/`PropertyAccessibility`/`PropertyPhoto`/`RatePlan`. Later SRS phases (Booking, Payment, Review, …) are not built yet — see the spec's out-of-scope list.
 - **Redis** is a derived cache (multi-tier: in-memory `CacheableMemory` 60s TTL, falling back to Redis) and the BullMQ job-queue backend — never a source of truth.
-- **Generated, never edited by hand:** `api/generated/prisma/**` (Prisma client), `api/schema.gql` (Apollo auto-generated schema), each web package's `src/gql/**` (graphql-codegen output, gitignored).
+- **Generated, never edited by hand:** `api/generated/prisma/**` (Prisma client), `api/schema.gql` (Apollo auto-generated schema), `web/shared/api/generated.graphql.tsx` (graphql-codegen output shared by both web apps, gitignored — see the codegen consolidation note below).
 
 ## Boundaries and contracts
 | Boundary | Format | Source of truth | Generated output (never hand-edited) | Regeneration command |
 |----------|--------|-----------------|--------------------------------------|----------------------|
 | `api/` GraphQL server | GraphQL (Apollo Driver, code-first) | Resolvers + entity classes in `api/src/**` | `api/schema.gql` | restart the dev server / `yarn build` |
-| `api/` ⇄ `web/*` contract | GraphQL operations | the live server's schema (introspection) | each package's `src/gql/**` | `yarn codegen` (needs the API dev server running) |
+| `api/` ⇄ `web/*` contract | GraphQL operations | the live server's schema (introspection) | `web/shared/api/generated.graphql.tsx` | `yarn codegen` from `web/` (needs the API dev server running) |
 | `api/` ⇄ PostgreSQL | Prisma schema | `api/prisma/schema.prisma` + `api/prisma/models/*.prisma` | `api/generated/prisma/**` | `yarn prisma-gen` |
 
 ## Environments
@@ -80,7 +80,9 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
   `designs/dss-v1-web-mockups-html/AuthSignUp.html`'s Log in/Sign up tab switcher and form fields, now wired
   (`auth-mutations-wiring`) to the real `signIn`/`signUp` mutations (email+password — flow 2, not flow 1's
   OTP path, resolving the mismatch flagged by `auth-sign-in-sign-up`'s open question 1) via each app's own
-  `SignInPage`/`SignUpPage` and a generated typed mutation from `web/shared/api/auth.graphql`. The mockup's
+  `SignInPage`/`SignUpPage` and a generated typed hook (`useSignInMutation`/`useSignUpMutation`) from
+  `web/shared/api/generated.graphql.tsx`, codegen'd from the gql operations in `web/shared/api/auth/
+  mutations.ts` — see the codegen consolidation note below. The mockup's
   6-digit "Confirm your email" panel was dropped from the real flow — `signIn`/`signUp` return tokens
   directly with no verification step, so the panel has no backend counterpart; `AuthOtpInput.tsx` is now
   unused (left in place, not deleted — flagged in `auth-mutations-wiring`'s PR body). On success the
@@ -93,6 +95,17 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
   set (ADR-007) ready to consume; `frontend-react.md`'s rules start mattering fully once a real
   (data-connected) screen is built inside these shells. `guest`'s prior `ComponentsShowcase` entry point
   lives at the sibling `/dev/components` route.
+- **Web codegen was consolidated from per-package to a single shared setup** (superseding the per-app model
+  described in ADR-006 and the original `auth-mutations-wiring` plan): each of `guest`/`host` used to run
+  its own `codegen.ts` (`@graphql-codegen/client-preset`) against `.graphql` documents under
+  `web/shared/api/`, emitting a separate typed client into its own `src/gql/**`. Now a single root
+  `web/codegen.ts` (`typescript-operations` + `typescript-react-apollo`) reads gql operations from
+  `.ts`/`.js` files under `shared/api/**` (e.g. `web/shared/api/auth/mutations.ts`, replacing the old
+  `web/shared/api/auth.graphql`) and emits one shared, hook-based client — `web/shared/api/
+  generated.graphql.tsx` (gitignored) plus an `introspection.json` snapshot at the `web/` root — consumed
+  by both apps via `useSignInMutation`/`useSignUpMutation`-style hooks instead of `useMutation(...Document)`.
+  Run it as `(cd web && yarn codegen)`, not per-package. `web/packages/guest/codegen.ts` and
+  `web/packages/host/codegen.ts` no longer exist.
 - `yarn start:dev`, `yarn test:e2e` (via full `AppModule`) and `yarn codegen` need live Postgres/PostGIS + Redis; `yarn test` (unit) and the rest of `yarn test:e2e` run standalone against in-memory PGlite.
 - No CI existed before this PR; `api/`'s lint (55 pre-existing problems) and one placeholder e2e test (`expect(true).toEqual(false)` in `update-account-profile.e2e-spec.ts`) are known, pre-existing failures — not introduced by this setup.
 - `yarn test:e2e`'s default (parallel) Jest workers can flake under load as the e2e suite grows — each worker boots its own in-memory PGlite + full `AppModule` (BullMQ/Redis included), and the default 5000ms hook timeout can be exceeded by CPU contention alone, not a real bug. `yarn test:e2e --runInBand` runs serially and is the reliable way to get a clean signal; it can hang on exit due to an unrelated pre-existing open-handle issue (Jest logs "did not exit one second after the test run has completed") — the test results themselves print before that hang, so read those and don't wait for the process to exit on its own.

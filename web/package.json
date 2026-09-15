@@ -9,6 +9,8 @@
     "dev:guest": "yarn workspace guest dev",
     "dev:host": "yarn workspace host dev",
     "build:all": "yarn workspaces run build",
-    "lint:all": "yarn workspaces run lint"
+    "lint:all": "yarn workspaces run lint",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch"
   }
 }

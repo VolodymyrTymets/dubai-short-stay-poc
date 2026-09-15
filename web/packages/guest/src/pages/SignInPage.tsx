@@ -1,12 +1,11 @@
-import { useMutation } from '@apollo/client'
 import { useNavigate } from 'react-router'
 import { AuthCard } from '../../../../shared/components/AuthCard'
 import { setAccessToken } from '../../../../shared/api/token'
-import { SignInDocument } from '../gql/graphql'
+import { useSignInMutation } from '../../../../shared/api/generated.graphql'
 
 export function SignInPage() {
   const navigate = useNavigate()
-  const [signIn, { loading, error }] = useMutation(SignInDocument)
+  const [signIn, { loading, error }] = useSignInMutation()
 
   async function handleSubmit(fields: { email: string; password: string }) {
     try {
