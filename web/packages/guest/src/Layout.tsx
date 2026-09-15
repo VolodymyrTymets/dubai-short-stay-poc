@@ -11,7 +11,6 @@ export function Layout() {
         checkIn="Add dates"
         checkOut="Add dates"
         guests="Add guests"
-        userInitials="G"
       />
       <main className="flex-1">
         <Outlet />
