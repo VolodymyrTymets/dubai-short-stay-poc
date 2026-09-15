@@ -1,11 +1,11 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsPhoneNumber, IsString, MinLength, MaxLength } from 'class-validator';
+import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
 
 @InputType()
 export class SignUpInput {
-  @IsPhoneNumber()
-  @Field(() => String, { description: 'phoneNumber' })
-  phoneNumber!: string;
+  @IsEmail()
+  @Field(() => String, { description: 'email' })
+  email!: string;
 
   @IsString()
   @MinLength(8)

@@ -36,12 +36,12 @@ export class JwtAuthStrategyService extends JwtStrategyService {
   async signIn(
     signInPasswordInput: SignInPasswordInput,
   ): Promise<AuthTokensEntity> {
-    const { phoneNumber, password } = signInPasswordInput;
+    const { email, password } = signInPasswordInput;
 
     const account = await this.prismaService.account.findFirst({
       where: {
         deleted: false,
-        AccountProfile: { phoneNumber, deleted: false },
+        AccountProfile: { email, deleted: false },
       },
       include: {
         AccountIdentity: true,
@@ -65,20 +65,21 @@ export class JwtAuthStrategyService extends JwtStrategyService {
     return this.issueTokens(account.id);
   }
 
-  // WHY: an account that already exists for this phone — with or without a
-  // password — must never be adopted here. Every OTP request auto-creates a
-  // passwordless Account for whatever phone number was given, so allowing
-  // sign-up to attach a password to an *existing* account would let anyone
-  // who merely knows a victim's phone number take it over. Only a brand-new
-  // account may proceed; claiming an existing one needs a separate,
-  // OTP-verified flow that doesn't exist yet.
+  // WHY: an account that already exists for this email — with or without a
+  // password — must never be adopted here. An Account's email can be set
+  // through updateAccountProfile without ever setting a password (e.g. an
+  // OTP-only account that later fills in its email), so allowing sign-up to
+  // attach a password to an *existing* account would let anyone who merely
+  // knows a victim's email take it over. Only a brand-new account may
+  // proceed; claiming an existing one needs a separate, verified flow that
+  // doesn't exist yet.
   async signUp(signUpInput: SignUpInput): Promise<AuthTokensEntity> {
-    const { phoneNumber, password } = signUpInput;
+    const { email, password } = signUpInput;
 
     const existingAccount = await this.prismaService.account.findFirst({
       where: {
         deleted: false,
-        AccountProfile: { phoneNumber, deleted: false },
+        AccountProfile: { email, deleted: false },
       },
     });
 
@@ -86,7 +87,7 @@ export class JwtAuthStrategyService extends JwtStrategyService {
       throw new ConflictException('Account already exists');
     }
 
-    const account = await this.accountService.createGuestAccount(phoneNumber);
+    const account = await this.accountService.createGuestAccountByEmail(email);
 
     const salt = await genSalt(JwtAuthStrategyService.BCRYPT_ROUNDS);
     const passwordHash = await hash(password, salt);

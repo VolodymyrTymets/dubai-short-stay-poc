@@ -69,6 +69,19 @@ describe('JwtAuthStrategyService', () => {
     return account;
   }
 
+  async function createAccountWithEmailIdentity(email: string) {
+    const account = await prismaService.account.create({
+      data: { lastLoginAt: new Date() },
+    });
+    await prismaService.accountProfile.create({
+      data: { accountId: account.id, email },
+    });
+    await prismaService.accountIdentity.create({
+      data: { accountId: account.id },
+    });
+    return account;
+  }
+
   it('should be defined', () => {
     expect(jwtAuthStrategyService).toBeDefined();
   });
@@ -126,7 +139,9 @@ describe('JwtAuthStrategyService', () => {
 
   describe('signIn', () => {
     it('should return accessToken and refreshToken when password matches', async () => {
-      const account = await createAccountWithIdentity('+8888888880');
+      const account = await createAccountWithEmailIdentity(
+        'sign-in-0@example.com',
+      );
       const password = 'correct-password';
       const passwordHash = await hash(password, 10);
       await prismaService.accountIdentity.update({
@@ -135,7 +150,7 @@ describe('JwtAuthStrategyService', () => {
       });
 
       const result = await jwtAuthStrategyService.signIn({
-        phoneNumber: '+8888888880',
+        email: 'sign-in-0@example.com',
         password,
       });
 
@@ -146,7 +161,9 @@ describe('JwtAuthStrategyService', () => {
     });
 
     it('should throw UnauthorizedException when password does not match', async () => {
-      const account = await createAccountWithIdentity('+8888888881');
+      const account = await createAccountWithEmailIdentity(
+        'sign-in-1@example.com',
+      );
       const passwordHash = await hash('correct-password', 10);
       await prismaService.accountIdentity.update({
         where: { accountId: account.id },
@@ -155,7 +172,7 @@ describe('JwtAuthStrategyService', () => {
 
       await expect(
         jwtAuthStrategyService.signIn({
-          phoneNumber: '+8888888881',
+          email: 'sign-in-1@example.com',
           password: 'wrong-password',
         }),
       ).rejects.toThrow(UnauthorizedException);
@@ -164,14 +181,16 @@ describe('JwtAuthStrategyService', () => {
     it('should throw UnauthorizedException when account does not exist', async () => {
       await expect(
         jwtAuthStrategyService.signIn({
-          phoneNumber: '+8888888882',
+          email: 'sign-in-2@example.com',
           password: 'whatever-password',
         }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
     it('should not mark the phone as verified', async () => {
-      const account = await createAccountWithIdentity('+8888888884');
+      const account = await createAccountWithEmailIdentity(
+        'sign-in-4@example.com',
+      );
       const password = 'correct-password';
       const passwordHash = await hash(password, 10);
       await prismaService.accountIdentity.update({
@@ -180,7 +199,7 @@ describe('JwtAuthStrategyService', () => {
       });
 
       await jwtAuthStrategyService.signIn({
-        phoneNumber: '+8888888884',
+        email: 'sign-in-4@example.com',
         password,
       });
 
@@ -192,7 +211,9 @@ describe('JwtAuthStrategyService', () => {
     });
 
     it('should throw UnauthorizedException when the account is soft-deleted', async () => {
-      const account = await createAccountWithIdentity('+8888888885');
+      const account = await createAccountWithEmailIdentity(
+        'sign-in-5@example.com',
+      );
       const password = 'correct-password';
       const passwordHash = await hash(password, 10);
       await prismaService.accountIdentity.update({
@@ -206,18 +227,18 @@ describe('JwtAuthStrategyService', () => {
 
       await expect(
         jwtAuthStrategyService.signIn({
-          phoneNumber: '+8888888885',
+          email: 'sign-in-5@example.com',
           password,
         }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
     it('should throw UnauthorizedException when account has no password set', async () => {
-      await createAccountWithIdentity('+8888888883');
+      await createAccountWithEmailIdentity('sign-in-3@example.com');
 
       await expect(
         jwtAuthStrategyService.signIn({
-          phoneNumber: '+8888888883',
+          email: 'sign-in-3@example.com',
           password: 'whatever-password',
         }),
       ).rejects.toThrow(UnauthorizedException);
@@ -225,9 +246,9 @@ describe('JwtAuthStrategyService', () => {
   });
 
   describe('signUp', () => {
-    it('should create a new account and return tokens for a fresh phone number', async () => {
+    it('should create a new account and return tokens for a fresh email', async () => {
       const result = await jwtAuthStrategyService.signUp({
-        phoneNumber: '+7777777770',
+        email: 'sign-up-0@example.com',
         password: 'correct-password',
       });
 
@@ -235,7 +256,7 @@ describe('JwtAuthStrategyService', () => {
       expect(result).toHaveProperty('refreshToken');
 
       const account = await prismaService.account.findFirst({
-        where: { AccountProfile: { phoneNumber: '+7777777770' } },
+        where: { AccountProfile: { email: 'sign-up-0@example.com' } },
         include: { AccountIdentity: true },
       });
       const storedHash = account?.AccountIdentity?.hash;
@@ -248,14 +269,16 @@ describe('JwtAuthStrategyService', () => {
     });
 
     it('should throw ConflictException when an account already exists without a password', async () => {
-      // WHY: an OTP request auto-creates a passwordless Account for any
-      // phone number, so signUp must refuse it too — otherwise anyone who
-      // knows the phone number could attach their own password to it.
-      const account = await createAccountWithIdentity('+7777777771');
+      // WHY: an account's email can be set via updateAccountProfile without
+      // ever setting a password, so signUp must refuse it too — otherwise
+      // anyone who knows the email could attach their own password to it.
+      const account = await createAccountWithEmailIdentity(
+        'sign-up-1@example.com',
+      );
 
       await expect(
         jwtAuthStrategyService.signUp({
-          phoneNumber: '+7777777771',
+          email: 'sign-up-1@example.com',
           password: 'correct-password',
         }),
       ).rejects.toThrow(ConflictException);
@@ -267,7 +290,9 @@ describe('JwtAuthStrategyService', () => {
     });
 
     it('should throw ConflictException when the account already has a password', async () => {
-      const account = await createAccountWithIdentity('+7777777772');
+      const account = await createAccountWithEmailIdentity(
+        'sign-up-2@example.com',
+      );
       await prismaService.accountIdentity.update({
         where: { accountId: account.id },
         data: { hash: await hash('existing-password', 10) },
@@ -275,7 +300,7 @@ describe('JwtAuthStrategyService', () => {
 
       await expect(
         jwtAuthStrategyService.signUp({
-          phoneNumber: '+7777777772',
+          email: 'sign-up-2@example.com',
           password: 'new-password',
         }),
       ).rejects.toThrow(ConflictException);
@@ -283,12 +308,12 @@ describe('JwtAuthStrategyService', () => {
 
     it('should not mark the phone as verified', async () => {
       await jwtAuthStrategyService.signUp({
-        phoneNumber: '+7777777773',
+        email: 'sign-up-3@example.com',
         password: 'correct-password',
       });
 
       const profile = await prismaService.accountProfile.findFirst({
-        where: { phoneNumber: '+7777777773' },
+        where: { email: 'sign-up-3@example.com' },
       });
       expect(profile?.isPhoneVerified).toBe(false);
     });
