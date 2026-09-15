@@ -29,20 +29,20 @@ so it belongs in `web/shared/` per ADR-006/`frontend-react.md` rule 9 rather tha
   resolved. No changes to `api/`.
 
 ## Acceptance criteria
-- [ ] AC1 Given a visitor on `guest` at `/sign-in`, when the page loads, then it shows the auth card with
+- [x] AC1 Given a visitor on `guest` at `/sign-in`, when the page loads, then it shows the auth card with
       the "Log in" tab active, inside the guest `Header`/`Footer` chrome, matching `AuthSignUp.html`'s
       typography/spacing/colors for the card itself (not its overlay).
-- [ ] AC2 Given the same visitor clicks the "Sign up" tab (or navigates to `/sign-up` directly), then the
+- [x] AC2 Given the same visitor clicks the "Sign up" tab (or navigates to `/sign-up` directly), then the
       form shows first name, last name, email, password (with the "At least 10 characters..." helper text),
       the marketing checkbox, and a "Create account" button — matching `AuthSignUp.html` exactly.
-- [ ] AC3 Given a visitor clicks "Create account" (or "Log in"), then the card switches to the "Confirm your
+- [x] AC3 Given a visitor clicks "Create account" (or "Log in"), then the card switches to the "Confirm your
       email" panel with 6 individual code boxes and a "Verify email" button, addressed to the email just
       typed into the form — matching `AuthSignUp.html`'s second panel. No network call happens.
-- [ ] AC4 The same three states (log in / sign up / confirm) render identically in `host` at its own
+- [x] AC4 The same three states (log in / sign up / confirm) render identically in `host` at its own
       `/sign-in` and `/sign-up`, inside `host`'s `Sidebar`/`Topbar` chrome instead of guest's.
-- [ ] AC5 All colors/fonts come from `web/shared/theme.css` tokens (`bg-primary`, `text-ink`,
+- [x] AC5 All colors/fonts come from `web/shared/theme.css` tokens (`bg-primary`, `text-ink`,
       `border-line-strong`, `font-serif`, etc.) — no hardcoded hex from the mockup HTML.
-- [ ] AC6 No console errors/warnings in either app on `/sign-in` or `/sign-up`; `yarn build:all` passes.
+- [x] AC6 No console errors/warnings in either app on `/sign-in` or `/sign-up`; `yarn build:all` passes.
 
 ## Edge cases
 | Case | Expected behaviour | Decided by |
