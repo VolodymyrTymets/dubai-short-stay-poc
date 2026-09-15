@@ -60,10 +60,17 @@ export function HomePage() {
   const navigate = useNavigate()
   const { data, loading, error, refetch } = usePropertiesQuery({
     variables: { pagination: { take: HAND_PICKED_TAKE, orderBy: [{ field: 'createdAt', order: 'desc' }] } },
+    notifyOnNetworkStatusChange: true,
   })
 
   function goToSearch() {
     navigate('/search')
+  }
+
+  function retryHandPicked() {
+    // WHY: refetch() rejects with the same ApolloError already surfaced via the `error` state below —
+    // this just stops it from becoming an unhandled promise rejection (rule D5).
+    void refetch().catch(() => {})
   }
 
   return (
@@ -99,7 +106,7 @@ export function HomePage() {
             loading={loading}
             hasError={!!error}
             properties={data?.properties}
-            onRetry={() => refetch()}
+            onRetry={retryHandPicked}
             skeletonCount={HAND_PICKED_TAKE}
           />
         </div>
@@ -141,6 +148,8 @@ export function HomePage() {
               Reach guests looking for quality stays. 12% all-inclusive commission — listing, photography
               guidance and distribution. VAT and Tourism Dirham handled for you.
             </p>
+            {/* TODO(volodymyr, guest-home-search): no host-listing flow/URL exists yet to point these at —
+                same not-yet-wired state as Header's own "List your property". */}
             <div className="flex gap-3 mt-2">
               <a href="#" className={`${ctaButton} bg-primary text-on-primary`}>
                 Start listing

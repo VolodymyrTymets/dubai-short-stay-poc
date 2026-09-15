@@ -15,6 +15,13 @@ const PLACEHOLDER_IMAGE =
 // 3-night stay stands in for it until Booking ships (spec.md's mocked-field table).
 const SAMPLE_STAY_NIGHTS = 3
 
+// Matches PropertyCard's own contract ("Omit to show 'New' instead of a rating — fewer than 3 reviews").
+const MIN_REVIEWS_FOR_RATING = 3
+
+// PropertyCard renders one dot per photo in a fixed-width card — cap so a host with many photos doesn't
+// overflow the row (the mockup itself never shows more than 5).
+const MAX_PHOTO_DOTS = 5
+
 function formatAed(amountAed: number, currency: string): string {
   return new Intl.NumberFormat('en-AE', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amountAed)
 }
@@ -43,8 +50,8 @@ export function mapPropertyToCard(property: PropertyRow): Omit<PropertyCardProps
     subtitle: subtitleFrom(property.description),
     details: detailsLine(property.bedrooms, property.maxGuests),
     pricePerNight: formatAed(property.basePriceAed, property.currency),
-    totalPrice: `${formatAed(totalAed, property.currency)} total`,
-    rating: property.rating ?? undefined,
-    photoCount: Math.max(property.photos.length, 1),
+    totalPrice: `${formatAed(totalAed, property.currency)} total · ${SAMPLE_STAY_NIGHTS} nights`,
+    rating: property.reviewCount >= MIN_REVIEWS_FOR_RATING ? (property.rating ?? undefined) : undefined,
+    photoCount: Math.min(Math.max(property.photos.length, 1), MAX_PHOTO_DOTS),
   }
 }

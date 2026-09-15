@@ -1,9 +1,17 @@
-import { Outlet, useNavigate } from 'react-router'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 import { Header } from '../../../shared/components/Header'
 import { Footer } from './Footer'
 
 export function Layout() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  function goToSearch() {
+    // Avoid pushing a duplicate history entry (and a stuck-feeling Back button) when already on /search.
+    if (location.pathname !== '/search') {
+      navigate('/search')
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-page">
@@ -15,7 +23,7 @@ export function Layout() {
         checkIn="Add dates"
         checkOut="Add dates"
         guests="Add guests"
-        onSearch={() => navigate('/search')}
+        onSearch={goToSearch}
       />
       <main className="flex-1">
         <Outlet />

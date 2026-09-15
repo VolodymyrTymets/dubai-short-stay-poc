@@ -26,8 +26,14 @@ export function PropertyResultsGrid({
   if (loading) {
     return (
       <>
+        {/* One live-region announcement for the whole set, not one per tile — the tiles below are
+            aria-hidden decoration (rule 15). `sr-only` is position:absolute, so it doesn't consume a
+            grid cell in the caller's grid container. */}
+        <span role="status" className="sr-only">
+          Loading stays
+        </span>
         {Array.from({ length: skeletonCount }).map((_, i) => (
-          <div key={i} role="status" aria-label="Loading stays" className="flex flex-col gap-3 w-[302px] shrink-0">
+          <div key={i} aria-hidden="true" className="flex flex-col gap-3 w-[302px] shrink-0">
             <div className="w-full h-[287px] rounded-xl bg-subtle animate-pulse" />
             <div className="h-4 w-3/4 rounded bg-subtle animate-pulse" />
             <div className="h-4 w-1/2 rounded bg-subtle animate-pulse" />

@@ -42,9 +42,16 @@ const FILTER_PILLS = ['Property type', 'Bedrooms', 'Amenities', 'Accessibility']
 export function SearchResultsPage() {
   const { data, loading, error, refetch } = usePropertiesQuery({
     variables: { pagination: { take: RESULTS_TAKE, orderBy: [{ field: 'createdAt', order: 'desc' }] } },
+    notifyOnNetworkStatusChange: true,
   })
 
   const count = data?.properties.length ?? 0
+
+  function retry() {
+    // WHY: refetch() rejects with the same ApolloError already surfaced via the `error` state below —
+    // this just stops it from becoming an unhandled promise rejection (rule D5).
+    void refetch().catch(() => {})
+  }
 
   return (
     <>
@@ -79,7 +86,7 @@ export function SearchResultsPage() {
         <div className="flex justify-between items-center">
           <div className="flex flex-col gap-1">
             <span className="text-[22px] leading-7 tracking-[-0.2px] font-semibold text-ink">
-              {loading ? 'Loading stays…' : `${count} stays`}
+              {loading ? 'Loading stays…' : `${count} stays shown`}
             </span>
             <span className="text-sm text-ink-muted">Prices include 5% VAT · Tourism Dirham Fee added at checkout</span>
           </div>
@@ -97,16 +104,14 @@ export function SearchResultsPage() {
             loading={loading}
             hasError={!!error}
             properties={data?.properties}
-            onRetry={() => refetch()}
+            onRetry={retry}
             skeletonCount={RESULTS_TAKE}
           />
         </div>
 
         {count > 0 && (
           <div className="flex flex-col items-center gap-2 mt-2">
-            <p className="text-xs text-ink-muted">
-              Showing 1 – {count} of {count} stays
-            </p>
+            <p className="text-xs text-ink-muted">Showing the first {count} stays</p>
           </div>
         )}
       </div>
