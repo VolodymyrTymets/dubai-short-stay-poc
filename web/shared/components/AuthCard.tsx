@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { Input } from './Input'
 import { Checkbox } from './Checkbox'
@@ -20,7 +20,8 @@ export function AuthCard({ activeTab, onSubmit, loading = false, error = null }:
   const [showPassword, setShowPassword] = useState(false)
   const [marketingOptIn, setMarketingOptIn] = useState(false)
 
-  function handleSubmitForm() {
+  function handleSubmitForm(event: FormEvent) {
+    event.preventDefault()
     onSubmit({ email, password })
   }
 
@@ -38,7 +39,7 @@ export function AuthCard({ activeTab, onSubmit, loading = false, error = null }:
           <span className="text-base font-semibold text-ink">Log in or sign up</span>
           <div className="w-10" />
         </div>
-        <div className="px-8 pt-7 pb-8 flex flex-col gap-5">
+        <form className="px-8 pt-7 pb-8 flex flex-col gap-5" onSubmit={handleSubmitForm}>
           <h2 className="font-serif text-3xl font-semibold text-ink">Welcome to DubaiShortStay</h2>
 
           <div className="flex p-1 rounded-[10px] bg-stone-100">
@@ -65,12 +66,14 @@ export function AuthCard({ activeTab, onSubmit, loading = false, error = null }:
               <Input
                 label="First name"
                 placeholder="Layla"
+                autoComplete="given-name"
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
               />
               <Input
                 label="Last name"
                 placeholder="Ahmed"
+                autoComplete="family-name"
                 value={lastName}
                 onChange={(event) => setLastName(event.target.value)}
               />
@@ -80,6 +83,7 @@ export function AuthCard({ activeTab, onSubmit, loading = false, error = null }:
           <Input
             label="Email"
             type="email"
+            autoComplete="email"
             placeholder="layla.ahmed@email.com"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -88,6 +92,7 @@ export function AuthCard({ activeTab, onSubmit, loading = false, error = null }:
           <Input
             label="Password"
             type={showPassword ? 'text' : 'password'}
+            autoComplete={activeTab === 'signup' ? 'new-password' : 'current-password'}
             placeholder="••••••••••"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -118,7 +123,7 @@ export function AuthCard({ activeTab, onSubmit, loading = false, error = null }:
             </p>
           )}
 
-          <Button variant="primary" size="lg" className="w-full" onClick={handleSubmitForm} disabled={loading}>
+          <Button variant="primary" size="lg" className="w-full" type="submit" disabled={loading}>
             {activeTab === 'signup'
               ? loading
                 ? 'Creating account…'
@@ -139,7 +144,7 @@ export function AuthCard({ activeTab, onSubmit, loading = false, error = null }:
             </button>{' '}
             (UAE PDPL).
           </p>
-        </div>
+        </form>
       </div>
     </div>
   )

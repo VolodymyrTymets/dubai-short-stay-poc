@@ -9,10 +9,14 @@ export function SignUpPage() {
   const [signUp, { loading, error }] = useMutation(SignUpDocument)
 
   async function handleSubmit(fields: { email: string; password: string }) {
-    const { data } = await signUp({ variables: { signUpInput: fields } })
-    if (data?.signUp.accessToken) {
-      setAccessToken(data.signUp.accessToken)
-      navigate('/')
+    try {
+      const { data } = await signUp({ variables: { signUpInput: fields } })
+      if (data?.signUp.accessToken) {
+        setAccessToken(data.signUp.accessToken)
+        navigate('/')
+      }
+    } catch {
+      // WHY: useMutation rethrows on error; already surfaced to the user via the `error` state below.
     }
   }
 

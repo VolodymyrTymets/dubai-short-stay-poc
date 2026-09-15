@@ -1,13 +1,11 @@
 mutation SignIn($signInPasswordInput: SignInPasswordInput!) {
   signIn(signInPasswordInput: $signInPasswordInput) {
     accessToken
-    refreshToken
   }
 }
 
 mutation SignUp($signUpInput: SignUpInput!) {
   signUp(signUpInput: $signUpInput) {
     accessToken
-    refreshToken
   }
 }
