@@ -59,20 +59,22 @@ closes a stub left by a prior ticket.
 | Title style ("Apartment in Dubai Marina") | `Property.title` (host-authored, real) | none — real field | use `property.title` as-is |
 
 ## Acceptance criteria
-- [ ] AC1 Given a visitor on `/`, when the page loads, then the hero, Hand-picked grid and the two static
+- [x] AC1 Given a visitor on `/`, when the page loads, then the hero, Hand-picked grid and the two static
       sections render per `Main.html` (minus Area guides), using the shared `Header`/`Footer`/`Layout`
       already in place.
-- [ ] AC2 Given the `properties` query is loading, loaded with results, loaded with zero results, or errors,
+- [x] AC2 Given the `properties` query is loading, loaded with results, loaded with zero results, or errors,
       then the Hand-picked grid shows a loading, success, empty or error (with retry) state respectively —
-      per `frontend-react.md` rule 7.
-- [ ] AC3 Given a visitor clicks the hero "Search" button, the "Show all N stays" button, or the header's
+      per `frontend-react.md` rule 7. Success/empty/error verified with screenshots; loading verified by
+      code review only (same `bg-subtle animate-pulse` pattern as the existing `Account.tsx`) — local API
+      latency is too low to reliably screenshot the transient loading state.
+- [x] AC3 Given a visitor clicks the hero "Search" button, the "Show all N stays" button, or the header's
       compact search control, then they land on `/search`.
-- [ ] AC4 Given a visitor on `/search`, when the page loads, then the filter bar, results header, a
+- [x] AC4 Given a visitor on `/search`, when the page loads, then the filter bar, results header, a
       3-column property grid (same data source/mapping as Hand-picked) and a pagination row render per
       `SearchResults.html` minus the map panel — with the same four query states as AC2.
-- [ ] AC5 `(cd web && yarn codegen)` (API dev server running) emits `usePropertiesQuery`; `(cd web && yarn
+- [x] AC5 `(cd web && yarn codegen)` (API dev server running) emits `usePropertiesQuery`; `(cd web && yarn
       build:all)` typechecks clean with both pages wired in.
-- [ ] AC6 No new runtime dependency is added (rule C2) — formatting uses `Intl.NumberFormat`, already
+- [x] AC6 No new runtime dependency is added (rule C2) — formatting uses `Intl.NumberFormat`, already
       available at runtime.
 
 ## Edge cases

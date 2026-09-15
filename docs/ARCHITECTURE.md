@@ -75,7 +75,8 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
 - `api/src/common/pagination.service.ts` / `prismacashing.service.ts` index Prisma by a raw `collection: string` — legacy generic pattern, don't extend it (see CLAUDE.md project rules).
 - `guest`/`host` each have a routed shell now (ADR-008, `react-router` in data mode): a `Layout` per app
   (`guest`: shared `Header` + a `guest`-local `Footer`; `host`: shared `Sidebar` + a `host`-local `Topbar`,
-  no footer) wraps `<Outlet/>`. `Home` is still an empty stub page — no real screen content yet. `Sign In`/
+  no footer) wraps `<Outlet/>`. `Home` now has real content (`guest-home-search`, see the dedicated bullet
+  below) — only `host`'s `Home` is still an empty stub. `Sign In`/
   `Sign Up` render a shared `AuthCard` (`web/shared/components/AuthCard.tsx`) built to match
   `designs/dss-v1-web-mockups-html/AuthSignUp.html`'s Log in/Sign up tab switcher and form fields, now wired
   (`auth-mutations-wiring`) to the real `signIn`/`signUp` mutations (email+password — flow 2, not flow 1's
@@ -99,7 +100,7 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
   `ACCOUNT_QUERY` (`web/shared/api/auth/query.ts`, codegen'd to `useAccountQuery`) backs a shared `Account`
   component (`web/shared/components/Account.tsx`) that both `guest`'s `Header` and `host`'s `Topbar` now
   render instead of a static `Avatar`. Signed out, it shows a "Sign in" link to `/sign-in` (previously
-  unreachable from the header on any page, including the still-stub `Home`); signed in, it shows `Avatar`
+  unreachable from the header on any page, including `Home`, then still a stub); signed in, it shows `Avatar`
   with initials derived from the real `AccountProfile.firstName`/`lastName` (falls back to `"?"` if both are
   empty, e.g. a phone-OTP account that never filled in a name). `web/shared/api/token.ts` now exposes
   `subscribeToAccessToken`, a small listener registry `Account` reads via `useSyncExternalStore` — a
@@ -108,6 +109,28 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
   valid token already being stored. Avatar **images** (`AccountProfile.avatarId`/`Avatar` → S3 `publicUrl`)
   are still not exposed over GraphQL or wired into `Avatar`/`Account` — initials only, for now. `host`'s
   sidebar "Keys Please" block is untouched (needs `HostProfile` fields this query doesn't fetch).
+- **`guest`'s `Home` is built and a new `SearchResultsPage` route exists** (`guest-home-search`): `HomePage`
+  (`web/packages/guest/src/pages/HomePage.tsx`, replacing its prior `return null` stub) follows
+  `designs/dss-v1-web-mockups-html/Main.html` — hero, a "Hand-picked" grid backed by the real public
+  `properties` query (`api/src/property/property.resolver.ts`), a static "Why DubaiShortStay" section and a
+  static host-CTA banner. The mockup's "Area guides" section (the 6-tile area image grid) was **not**
+  built — explicit scope cut. A new `SearchResultsPage` (`web/packages/guest/src/pages/
+  SearchResultsPage.tsx`, route `/search`) follows `designs/dss-v1-web-mockups-html/SearchResults.html` —
+  filter-pill bar, results header, the same `properties`-backed 3-column grid — minus the mockup's map
+  panel (explicit scope cut). Both pages share a new `PropertyResultsGrid`
+  (`web/packages/guest/src/components/PropertyResultsGrid.tsx`) for the four required states (loading/
+  error/empty/success) and a new `mapPropertyToCard` (`web/shared/api/property/mapPropertyToCard.ts`) that
+  maps a `Property` row to `PropertyCard` props. The header's compact search icon (`Layout.tsx`'s
+  `onSearch`) and the hero's "Search"/"Show all stays" controls all navigate to `/search`; the filter pills,
+  sort control and pagination row on `/search` are **decorative** — the `properties` query has no matching
+  filter args (only `search: { title, slug }`) and no total-count field to paginate against. Three fields
+  the mockups want don't exist on `Property` yet and are **mocked**, not real data: the card image (a flat
+  placeholder tile — `PropertyPhotoEntity` has no public URL, and even `FileEntity.publicUrl` would sign
+  against S3 using the local seed's `picsum.photos` URL as if it were a real object key, producing a broken
+  link), the card subtitle (derived from `Property.description`, truncated, since no dedicated subtitle
+  field exists), and the "total price" (an illustrative fixed 3-night stay, since no `Booking`/length-of-
+  stay model exists yet). See `docs/features/guest-home-search/spec.md`'s mocked-field table for the full
+  reasoning — a later ticket should replace these once the underlying data exists.
 - **Web codegen was consolidated from per-package to a single shared setup** (superseding the per-app model
   described in ADR-006 and the original `auth-mutations-wiring` plan): each of `guest`/`host` used to run
   its own `codegen.ts` (`@graphql-codegen/client-preset`) against `.graphql` documents under
