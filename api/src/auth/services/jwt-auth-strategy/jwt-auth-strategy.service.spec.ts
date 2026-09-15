@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException } from '@nestjs/common';
-import { hash } from 'bcrypt';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { compare, hash } from 'bcrypt';
 import { JwtAuthStrategyService } from './jwt-auth-strategy.service';
 import { PrismaModule } from '../../../prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
@@ -11,6 +11,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtStrategy } from '../../strategies/jwt.strategy';
 import { GqlAuthGuard } from '../../guards/gql-auth.guard';
 import { AccountRoleModule } from '../../../account-role/account-role.module';
+import { AccountService } from '../../../account/account.service';
 
 describe('JwtAuthStrategyService', () => {
   let jwtAuthStrategyService: JwtAuthStrategyService;
@@ -37,7 +38,12 @@ describe('JwtAuthStrategyService', () => {
           signOptions: { expiresIn: '15m' },
         }),
       ],
-      providers: [JwtAuthStrategyService, JwtStrategy, GqlAuthGuard],
+      providers: [
+        JwtAuthStrategyService,
+        JwtStrategy,
+        GqlAuthGuard,
+        AccountService,
+      ],
     }).compile();
 
     jwtAuthStrategyService = app.get<JwtAuthStrategyService>(
@@ -215,6 +221,76 @@ describe('JwtAuthStrategyService', () => {
           password: 'whatever-password',
         }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('signUp', () => {
+    it('should create a new account and return tokens for a fresh phone number', async () => {
+      const result = await jwtAuthStrategyService.signUp({
+        phoneNumber: '+7777777770',
+        password: 'correct-password',
+      });
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+
+      const account = await prismaService.account.findFirst({
+        where: { AccountProfile: { phoneNumber: '+7777777770' } },
+        include: { AccountIdentity: true },
+      });
+      const storedHash = account?.AccountIdentity?.hash;
+      expect(storedHash).toBeDefined();
+      const passwordMatches = await compare(
+        'correct-password',
+        storedHash ?? '',
+      );
+      expect(passwordMatches).toBe(true);
+    });
+
+    it('should throw ConflictException when an account already exists without a password', async () => {
+      // WHY: an OTP request auto-creates a passwordless Account for any
+      // phone number, so signUp must refuse it too — otherwise anyone who
+      // knows the phone number could attach their own password to it.
+      const account = await createAccountWithIdentity('+7777777771');
+
+      await expect(
+        jwtAuthStrategyService.signUp({
+          phoneNumber: '+7777777771',
+          password: 'correct-password',
+        }),
+      ).rejects.toThrow(ConflictException);
+
+      const identity = await prismaService.accountIdentity.findFirst({
+        where: { accountId: account.id },
+      });
+      expect(identity?.hash).toBeNull();
+    });
+
+    it('should throw ConflictException when the account already has a password', async () => {
+      const account = await createAccountWithIdentity('+7777777772');
+      await prismaService.accountIdentity.update({
+        where: { accountId: account.id },
+        data: { hash: await hash('existing-password', 10) },
+      });
+
+      await expect(
+        jwtAuthStrategyService.signUp({
+          phoneNumber: '+7777777772',
+          password: 'new-password',
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should not mark the phone as verified', async () => {
+      await jwtAuthStrategyService.signUp({
+        phoneNumber: '+7777777773',
+        password: 'correct-password',
+      });
+
+      const profile = await prismaService.accountProfile.findFirst({
+        where: { phoneNumber: '+7777777773' },
+      });
+      expect(profile?.isPhoneVerified).toBe(false);
     });
   });
 
