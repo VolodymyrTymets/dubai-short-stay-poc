@@ -10,7 +10,7 @@ import type { GraphQLResponseType } from '../utils/e2e-services/interfaces/types
 import { SignInService } from '../utils/e2e-services/sign-in.service';
 import { AccountRoleType } from '../../generated/prisma/enums';
 
-describe.only('Sign in otp (e2e)', () => {
+describe('Sign in otp (e2e)', () => {
   let app: INestApplication<App>;
   let prismaService: PrismaService;
   let signInService: SignInService;

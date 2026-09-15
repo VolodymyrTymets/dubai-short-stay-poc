@@ -23,7 +23,7 @@ describe('Sign in with password (e2e)', () => {
 
   beforeAll(async () => {
     await dataCooker.beforeAll();
-  });
+  }, 10000);
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
