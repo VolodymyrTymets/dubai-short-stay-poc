@@ -15,7 +15,7 @@ describe('Property (e2e)', () => {
 
   beforeAll(async () => {
     await dataCooker.beforeAll();
-  });
+  }, 10000);
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,7 +29,7 @@ describe('Property (e2e)', () => {
 
   afterAll(async () => {
     await dataCooker.afterAll();
-  });
+  }, 10000);
 
   const seedOwnerAndLocation = async (slugSuffix: string) => {
     const account = await prismaService.account.create({
