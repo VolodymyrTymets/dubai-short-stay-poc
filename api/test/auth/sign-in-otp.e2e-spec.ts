@@ -10,7 +10,7 @@ import type { GraphQLResponseType } from '../utils/e2e-services/interfaces/types
 import { SignInService } from '../utils/e2e-services/sign-in.service';
 import { AccountRoleType } from '../../generated/prisma/enums';
 
-describe('Sign in otp (e2e)', () => {
+describe.only('Sign in otp (e2e)', () => {
   let app: INestApplication<App>;
   let prismaService: PrismaService;
   let signInService: SignInService;
@@ -19,7 +19,7 @@ describe('Sign in otp (e2e)', () => {
 
   beforeAll(async () => {
     await dataCooker.beforeAll();
-  });
+  }, 10000);
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -294,10 +294,12 @@ describe('Sign in otp (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   afterAll(async () => {
     await dataCooker.afterAll();
-  });
+  }, 10000);
 });

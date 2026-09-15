@@ -11,7 +11,7 @@ describe('HostProfile + HostKycDocument (e2e)', () => {
 
   beforeAll(async () => {
     await dataCooker.beforeAll();
-  });
+  }, 10000);
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -25,7 +25,7 @@ describe('HostProfile + HostKycDocument (e2e)', () => {
 
   afterAll(async () => {
     await dataCooker.afterAll();
-  });
+  }, 10000);
 
   const createHost = async () => {
     const account = await prismaService.account.create({

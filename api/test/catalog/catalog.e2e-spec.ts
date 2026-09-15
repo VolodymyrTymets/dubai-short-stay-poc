@@ -15,7 +15,7 @@ describe('Catalog reference models (e2e)', () => {
 
   beforeAll(async () => {
     await dataCooker.beforeAll();
-  });
+  }, 10000);
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,7 +29,7 @@ describe('Catalog reference models (e2e)', () => {
 
   afterAll(async () => {
     await dataCooker.afterAll();
-  });
+  }, 10000);
 
   it('creates and reads back a City', async () => {
     const city = await prismaService.city.create({
