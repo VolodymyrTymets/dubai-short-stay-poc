@@ -37,17 +37,17 @@ is `return null` and `Header` has no auth-aware element).
     sign-up from the sign-in page.
 
 ## Acceptance criteria
-- [ ] AC1 Given a signed-out visitor on `guest`'s home page (or any routed page), when the page renders,
+- [x] AC1 Given a signed-out visitor on `guest`'s home page (or any routed page), when the page renders,
       then the `Header` shows a "Sign in" link to `/sign-in` instead of an avatar.
-- [ ] AC2 Given a signed-out visitor on `host`, when the page renders, then `Topbar` shows the same "Sign
+- [x] AC2 Given a signed-out visitor on `host`, when the page renders, then `Topbar` shows the same "Sign
       in" link instead of an avatar.
-- [ ] AC3 Given a signed-in `guest`/`host` account with `firstName`/`lastName` set, when the page renders,
+- [x] AC3 Given a signed-in `guest`/`host` account with `firstName`/`lastName` set, when the page renders,
       then `Header`/`Topbar` shows `Avatar` with initials derived from the real account name (not
       hardcoded `"G"`/`"KP"`).
-- [ ] AC4 Given a signed-in account that just completed `signIn`/`signUp` (token freshly set, no full page
+- [x] AC4 Given a signed-in account that just completed `signIn`/`signUp` (token freshly set, no full page
       reload), when the resulting navigation to `/` completes, then the header updates to the signed-in
       state without a manual refresh.
-- [ ] AC5 `yarn codegen` (from `web/`) produces a `useAccountQuery` hook from the new query operation, and
+- [x] AC5 `yarn codegen` (from `web/`) produces a `useAccountQuery` hook from the new query operation, and
       `yarn build:all` (from `web/`) typechecks clean with it wired into both apps.
 
 ## Edge cases

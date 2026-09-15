@@ -95,6 +95,19 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
   set (ADR-007) ready to consume; `frontend-react.md`'s rules start mattering fully once a real
   (data-connected) screen is built inside these shells. `guest`'s prior `ComponentsShowcase` entry point
   lives at the sibling `/dev/components` route.
+- **`Header`/`Topbar`'s hardcoded `userInitials` placeholder is resolved** (`account-avatar`): a new
+  `ACCOUNT_QUERY` (`web/shared/api/auth/query.ts`, codegen'd to `useAccountQuery`) backs a shared `Account`
+  component (`web/shared/components/Account.tsx`) that both `guest`'s `Header` and `host`'s `Topbar` now
+  render instead of a static `Avatar`. Signed out, it shows a "Sign in" link to `/sign-in` (previously
+  unreachable from the header on any page, including the still-stub `Home`); signed in, it shows `Avatar`
+  with initials derived from the real `AccountProfile.firstName`/`lastName` (falls back to `"?"` if both are
+  empty, e.g. a phone-OTP account that never filled in a name). `web/shared/api/token.ts` now exposes
+  `subscribeToAccessToken`, a small listener registry `Account` reads via `useSyncExternalStore` — a
+  client-side route change alone (e.g. `signIn`'s `navigate('/')`) does not re-render sibling components
+  like `Header`, so without this subscription the header stayed on "Sign in" until a manual reload despite a
+  valid token already being stored. Avatar **images** (`AccountProfile.avatarId`/`Avatar` → S3 `publicUrl`)
+  are still not exposed over GraphQL or wired into `Avatar`/`Account` — initials only, for now. `host`'s
+  sidebar "Keys Please" block is untouched (needs `HostProfile` fields this query doesn't fetch).
 - **Web codegen was consolidated from per-package to a single shared setup** (superseding the per-app model
   described in ADR-006 and the original `auth-mutations-wiring` plan): each of `guest`/`host` used to run
   its own `codegen.ts` (`@graphql-codegen/client-preset`) against `.graphql` documents under
