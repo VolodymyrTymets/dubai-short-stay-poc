@@ -14,16 +14,33 @@ export type SidebarProps = {
   items: SidebarNavItem[]
   activeId?: string
   onSelect?: (id: string) => void
+  /** Omits the component's own width/padding/rounded-card background — for embedding inside a
+   * parent that already owns the sidebar's box (e.g. a page-level `<aside>`), so nested boxes
+   * don't stack and the nav isn't wider than its container. */
+  bare?: boolean
+  /** Accessible name for the `<nav>` landmark — needed when more than one `Sidebar` renders on a page. */
+  ariaLabel?: string
 }
 
-export function Sidebar({ variant = 'light', groupLabel, items, activeId, onSelect }: SidebarProps) {
+export function Sidebar({
+  variant = 'light',
+  groupLabel,
+  items,
+  activeId,
+  onSelect,
+  bare = false,
+  ariaLabel,
+}: SidebarProps) {
   const dark = variant === 'dark'
   const ring = dark
     ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gold-500'
     : 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-line-focus'
 
   return (
-    <nav className={`w-64 p-4 rounded-2xl flex flex-col gap-1 ${dark ? 'bg-navy-900' : 'bg-cream-200'}`}>
+    <nav
+      aria-label={ariaLabel}
+      className={`flex flex-col gap-1 ${bare ? '' : `w-64 p-4 rounded-2xl ${dark ? 'bg-navy-900' : 'bg-cream-200'}`}`}
+    >
       {groupLabel && (
         <div
           className={`px-3 pt-4 pb-1.5 font-mono text-[11px] font-medium uppercase tracking-[1.8px] ${
