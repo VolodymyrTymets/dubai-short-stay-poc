@@ -72,13 +72,11 @@ export.
   pass per spec.md's edge cases
 
 ## Docs to update in this PR
-- [ ] docs/features/auth-mutations-wiring/spec.md (acceptance criteria checked off)
-- [ ] docs/ARCHITECTURE.md — "Known constraints and landmines" currently says the auth UI is "UI only — no
-      signInOtp/verifyOtp mutation is wired yet" and flags the password-vs-OTP mismatch as an open item;
-      update once real `signIn`/`signUp` wiring lands (the mismatch is resolved — the UI already collected
-      email+password, matching the real mutations)
-- [ ] docs/DOMAIN_GLOSSARY.md — not touched, no new domain terms
-- [ ] docs/decisions/ADR-NNN — none; no new architectural pattern (reuses the existing per-app codegen model
+- [x] docs/features/auth-mutations-wiring/spec.md (acceptance criteria checked off)
+- [x] docs/ARCHITECTURE.md — "Known constraints and landmines" updated: the auth UI is no longer "UI
+      only," the OTP panel removal and its rationale are recorded, and the CORS gap fix is noted
+- [x] docs/DOMAIN_GLOSSARY.md — not touched, no new domain terms
+- [x] docs/decisions/ADR-NNN — none; no new architectural pattern (reuses the existing per-app codegen model
       and the existing Apollo client factory)
 
 ## Risks
@@ -86,6 +84,17 @@ export.
 |------|--------|-------------------------------|
 | `yarn codegen` needs the API dev server up; if it isn't, both packages' codegen fails or hangs (`RUNBOOK.md`) | Blocks R1's verification | Start `api/`'s dev server first, confirmed reachable, before running codegen |
 | Removing the OTP step changes previously-signed-off UI behaviour (`auth-sign-in-sign-up`'s AC3) | A visual regression from a prior ticket's acceptance criteria | Explicitly re-decided in chat this session, recorded in spec.md's open question 1 — not a silent regression |
+
+Two gaps surfaced only once R3 actually exercised the flow in a real browser (neither was introduced by this
+ticket — both existed the moment before this ticket, just never triggered, since no browser client had ever
+called the API cross-origin, and no package had ever built with a real generated GraphQL operation):
+- `api/` had no CORS configuration at all — the browser's preflight `OPTIONS /graphql` came back `400`.
+  Fixed with `app.enableCors({ origin: [...] })` in `main.ts` for the two local dev origins.
+- Both `codegen.ts`'s `client` preset defaulted to regular (non-type-only) imports in its generated
+  `fragment-masking.ts`/`gql.ts`/`graphql.ts`, which fails `tsc -b` under this repo's `verbatimModuleSyntax`.
+  Fixed with `config: { useTypeImports: true }` (a sibling of `presetConfig`, not nested inside it — verified
+  against the installed `@graphql-codegen/client-preset@6.2.0` source after the option had no effect nested
+  under `presetConfig`, contra a plausible reading of the docs) in both packages' `codegen.ts`.
 
 ## Assumptions
 - Working on the current branch (`sin-in-workflow`, already a non-`main` worktree branch) rather than

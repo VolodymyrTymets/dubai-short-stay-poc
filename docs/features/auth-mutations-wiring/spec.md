@@ -39,18 +39,18 @@ already established for `Header`/`Sidebar`.
   password-reset flow.
 
 ## Acceptance criteria
-- [ ] AC1 Given a visitor on `guest` `/sign-in` fills a valid email+password of an existing account and
+- [x] AC1 Given a visitor on `guest` `/sign-in` fills a valid email+password of an existing account and
       clicks "Log in", then `signIn` is called, `accessToken` lands in `localStorage`, and the app navigates
       to `/`.
-- [ ] AC2 Given a visitor on `guest` `/sign-up` fills first/last name (ignored), email, password and clicks
+- [x] AC2 Given a visitor on `guest` `/sign-up` fills first/last name (ignored), email, password and clicks
       "Create account", then `signUp` is called with only `{ email, password }`, `accessToken` is persisted,
       and the app navigates to `/`.
-- [ ] AC3 Given wrong credentials on `/sign-in`, then the mutation's `ApolloError` message renders inline in
+- [x] AC3 Given wrong credentials on `/sign-in`, then the mutation's `ApolloError` message renders inline in
       `AuthCard` (no crash, no unhandled rejection) and no token is written.
-- [ ] AC4 The same two flows (AC1/AC2) work identically in `host` at its own `/sign-in`/`/sign-up`.
-- [ ] AC5 Once a token is persisted, a subsequent GraphQL request from the same app sends
+- [x] AC4 The same two flows (AC1/AC2) work identically in `host` at its own `/sign-in`/`/sign-up`.
+- [x] AC5 Once a token is persisted, a subsequent GraphQL request from the same app sends
       `Authorization: Bearer <token>` (verified via the browser's network inspector).
-- [ ] AC6 `(cd web && yarn build:all)` and `(cd web && yarn lint:all)` pass; no new console errors on
+- [x] AC6 `(cd web && yarn build:all)` and `(cd web && yarn lint:all)` pass; no new console errors on
       `/sign-in`/`/sign-up` in either app.
 
 ## Edge cases
