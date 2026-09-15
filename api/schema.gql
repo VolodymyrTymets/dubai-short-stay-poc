@@ -163,6 +163,11 @@ type Query {
   """Get one of the current host's own property listings by id"""
   property(id: String!): PropertyEntity
 
+  """
+  Public search of live property listings, paginated, sorted by most recently created by default — no authentication required
+  """
+  properties(pagination: PaginationInput, search: SearchInput): [PropertyEntity!]!
+
   """List the current host's own property listings"""
   myProperties(pagination: PaginationInput, search: SearchInput): [PropertyEntity!]!
 }
@@ -189,6 +194,9 @@ input SortingInput {
 input SearchInput {
   """default search argument"""
   slug: String
+
+  """search by title"""
+  title: String
 }
 
 type Mutation {

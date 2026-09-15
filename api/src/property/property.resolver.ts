@@ -65,6 +65,25 @@ export class PropertyResolver {
   }
 
   @Query(() => [PropertyEntity], {
+    name: 'properties',
+    description:
+      'Public search of live property listings, paginated, sorted by most recently created by default — no authentication required',
+  })
+  // Intentionally no @UseGuards(GqlAuthGuard)/@Roles here — this is the
+  // guest-facing listing query (ARCHITECTURE.md flow #5 notes none existed
+  // yet), matching this repo's existing convention of a bare @Query/@Mutation
+  // for public operations (see e.g. signIn/signUp in auth.resolver.ts).
+  properties(
+    @Args('pagination', { nullable: true }) pagination?: PaginationInput,
+    @Args('search', { nullable: true }) search?: SearchInput,
+  ) {
+    return this.propertyService.findAllProperties(
+      pagination ?? { orderBy: [{ field: 'createdAt', order: 'desc' }] },
+      search,
+    );
+  }
+
+  @Query(() => [PropertyEntity], {
     name: 'myProperties',
     description: "List the current host's own property listings",
   })

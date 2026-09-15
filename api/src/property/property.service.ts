@@ -248,6 +248,26 @@ export class PropertyService {
     return this.toEntity(property);
   }
 
+  async findAllProperties(pagination: PaginationInput, search?: SearchInput) {
+    const orderBy = pagination.orderBy
+      .filter((sort) => SORTABLE_FIELDS.has(sort.field))
+      .map((sort) => ({ [sort.field]: sort.order }));
+
+    const properties = await this.prisma.property.findMany({
+      where: {
+        status: PropertyStatus.LIVE,
+        deleted: false,
+        ...(search?.title && { title: { contains: search.title } }),
+      },
+      orderBy: orderBy.length > 0 ? orderBy : [{ createdAt: 'desc' }],
+      take: Math.min(pagination.take ?? DEFAULT_TAKE, MAX_TAKE),
+      skip: pagination.skip,
+      include: PROPERTY_INCLUDE,
+    });
+
+    return properties.map((property) => this.toEntity(property));
+  }
+
   async findMyProperties(
     accountId: string,
     pagination: PaginationInput,
