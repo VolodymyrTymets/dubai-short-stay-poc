@@ -35,7 +35,7 @@ export function AuthCard({ activeTab }: AuthCardProps) {
               <Link
                 to="/"
                 className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-ink hover:bg-subtle"
-                aria-label="Close"
+                aria-label="Back to home"
               >
                 <XIcon size={18} />
               </Link>
@@ -89,28 +89,24 @@ export function AuthCard({ activeTab }: AuthCardProps) {
                 onChange={(event) => setEmail(event.target.value)}
               />
 
-              <div className="flex flex-col gap-1.5">
-                <Input
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••••"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  suffix={
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="text-ink-muted"
-                    >
-                      {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
-                    </button>
-                  }
-                />
-                {activeTab === 'signup' && (
-                  <div className="text-xs text-ink-muted">At least 10 characters with a number and a symbol.</div>
-                )}
-              </div>
+              <Input
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••••"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                helperText={activeTab === 'signup' ? 'At least 10 characters with a number and a symbol.' : undefined}
+                suffix={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="text-ink-muted"
+                  >
+                    {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                  </button>
+                }
+              />
 
               {activeTab === 'signup' && (
                 <Checkbox
@@ -125,8 +121,15 @@ export function AuthCard({ activeTab }: AuthCardProps) {
               </Button>
 
               <p className="text-xs text-ink-muted">
-                By continuing you agree to the <span className="underline">Terms of Service</span> and
-                acknowledge the <span className="underline">Privacy Policy</span> (UAE PDPL).
+                By continuing you agree to the{' '}
+                <button type="button" className="underline text-ink-muted">
+                  Terms of Service
+                </button>{' '}
+                and acknowledge the{' '}
+                <button type="button" className="underline text-ink-muted">
+                  Privacy Policy
+                </button>{' '}
+                (UAE PDPL).
               </p>
             </div>
           </>
@@ -159,7 +162,11 @@ export function AuthCard({ activeTab }: AuthCardProps) {
                 Verify email
               </Button>
               <p className="text-sm text-ink-muted">
-                Didn't get it? <span className="text-ink underline">Resend code</span> in 0:42
+                Didn't get it?{' '}
+                <button type="button" disabled className="text-ink underline disabled:opacity-50">
+                  Resend code
+                </button>{' '}
+                in 0:42
               </p>
             </div>
           </>
