@@ -9,6 +9,7 @@ import { AccountService } from '../account/account.service';
 import { AccountProfileService } from '../account-profile/account-profile.service';
 import { AccountRoleService } from '../account-role/account-role.service';
 import { InitAdminMigration } from './items/init.admin.migration';
+import { InitPropertyMigration } from './items.development/init.property.migration';
 
 @Injectable()
 export class MigrationsService {
@@ -40,6 +41,18 @@ export class MigrationsService {
           this.accountRoleService,
         ),
       ];
+    }
+    // Excludes 'test': 100 properties x 3 nested photo/file creates is heavy
+    // enough to blow test hook timeouts and pollute the shared PGlite
+    // instance across every spec file's DataCooker.beforeAll() — this seed
+    // is for local/development only.
+    if (
+      process.env.NODE_ENV === 'local' ||
+      process.env.NODE_ENV === 'development'
+    ) {
+      this.developmentMigrations.push(
+        new InitPropertyMigration(this.prismaService, this.accountRoleService),
+      );
     }
   }
   private readonly migrations: Array<IMigrationItem> = [];
