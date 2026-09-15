@@ -17,15 +17,15 @@
       "Bash(yarn format:*)",
       "Bash(yarn workspace guest lint:*)", "Bash(yarn workspace host lint:*)",
       "Bash(yarn workspace guest build:*)", "Bash(yarn workspace host build:*)",
+      "Bash(yarn prisma-migrate:*)", "Bash(yarn reset-db:*)", "Bash(npx prisma:*)",
+      "Bash(yarn codegen:*)",
       "mcp__context7__*",
-      "mcp__serena__*"
+      "mcp__serena__*",
+      "Bash(docker:*)", "Bash(docker compose:*)", "Bash(docker-compose:*)"
     ],
     "ask": [
       "Bash(git push:*)", "Bash(gh pr create:*)", "Bash(gh issue:*)",
       "Bash(yarn add:*)", "Bash(yarn workspace * add:*)",
-      "Bash(yarn prisma-migrate:*)", "Bash(yarn reset-db:*)", "Bash(npx prisma:*)",
-      "Bash(docker:*)", "Bash(docker compose:*)", "Bash(docker-compose:*)",
-      "Bash(yarn codegen:*)",
       "Edit(api/package.json)", "Edit(web/package.json)", "Edit(web/packages/*/package.json)",
       "Edit(api/prisma/schema.prisma)", "Edit(api/prisma/models/**)",
       "Edit(.github/workflows/**)", "Edit(CLAUDE.md)", "Edit(.claude/**)",
