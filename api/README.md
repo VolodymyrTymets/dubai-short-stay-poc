@@ -35,11 +35,11 @@ $ yarn run worker:start:dev
 # production mode
 $ yarn run start:prod
 ```
-Or run via docker
+Or run via docker (from the repo root — `docker-compose.yml` now lives there, not in `api/`)
 ```bash
 $ docker-compose up -d --build
 ```
-> Note: For docker `.env.development` file should be placed in the root of the project and should look like this:
+> Note: For docker `.env.development` should be placed at `api/.env.development` and should look like this:
 > ```env
 > PORT=3001
 > NODE_ENV=local

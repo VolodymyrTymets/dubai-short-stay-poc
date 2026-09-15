@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # Node.js Application (API)
+  api:
+    container_name: api
+    build:
+      context: ./api
+      target: development
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./api/.env.development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - my_network
+    develop:
+      watch:
+        - path: ./api/src
+          target: /usr/src/app/src
+          action: sync
+        - path: ./api/package.json
+          action: rebuild
+        - path: ./api/prisma
+          action: rebuild
+
+  # Background Worker
+  worker:
+    container_name: worker
+    build:
+      context: ./api
+      target: worker
+    env_file:
+      - ./api/.env.development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - my_network
+    develop:
+      watch:
+        - path: ./api/src
+          target: /usr/src/app/src
+          action: sync
+        - path: ./api/package.json
+          action: rebuild
+        - path: ./api/prisma
+          action: rebuild
+
+
+  # PostgreSQL Database
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: postgres
+    restart: always
+    env_file:
+      - ./api/.env.development
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trukkit"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redisdata:/data
+    networks:
+      - my_network
+
+  # Guest-facing web app (Vite dev server)
+  guest:
+    container_name: guest
+    build:
+      context: ./web
+      dockerfile: packages/guest/Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./web/packages/guest/.env
+    depends_on:
+      - api
+    networks:
+      - my_network
+    develop:
+      watch:
+        - path: ./web/packages/guest/src
+          target: /usr/src/app/packages/guest/src
+          action: sync
+        - path: ./web/packages/guest/index.html
+          target: /usr/src/app/packages/guest/index.html
+          action: sync
+        - path: ./web/shared
+          target: /usr/src/app/shared
+          action: sync
+        - path: ./web/packages/guest/package.json
+          action: rebuild
+        - path: ./web/packages/guest/vite.config.ts
+          target: /usr/src/app/packages/guest/vite.config.ts
+          action: sync+restart
+
+  # Host-facing web app (Vite dev server)
+  host:
+    container_name: host
+    build:
+      context: ./web
+      dockerfile: packages/host/Dockerfile
+      target: development
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./web/packages/host/.env
+    depends_on:
+      - api
+    networks:
+      - my_network
+    develop:
+      watch:
+        - path: ./web/packages/host/src
+          target: /usr/src/app/packages/host/src
+          action: sync
+        - path: ./web/packages/host/index.html
+          target: /usr/src/app/packages/host/index.html
+          action: sync
+        - path: ./web/shared
+          target: /usr/src/app/shared
+          action: sync
+        - path: ./web/packages/host/package.json
+          action: rebuild
+        - path: ./web/packages/host/vite.config.ts
+          target: /usr/src/app/packages/host/vite.config.ts
+          action: sync+restart
+
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  my_network:
+    driver: bridge

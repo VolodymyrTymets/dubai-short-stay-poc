@@ -14,6 +14,11 @@
 
 There is no root `package.json`; `api/` and `web/` are managed independently and never import each other's code.
 
+`docker-compose.yml` at the repo root brings up the full stack in containers — `api`, `worker`, `postgres`,
+`redis`, plus `guest` and `host` (each a Vite dev server, built from `web/packages/*/Dockerfile` with a
+build context of `web/` so `web/shared/**` is available at build time). `api/Dockerfile` and
+`web/packages/*/Dockerfile` still live next to the code they build.
+
 ## Where data truth lives
 - **PostgreSQL + PostGIS** (via Prisma, `api/prisma/schema.prisma` + `api/prisma/models/*.prisma`) is authoritative for all domain data: `Account`, `AccountProfile`, `AccountRole`/`AccountOnRole`, `AccountIdentity`, `Guest`, `Host`, `File`, plus system tables `Migration`, `DeletedHistory`. PostGIS is enabled but not yet used by any model — `Property.lat`/`lng` are plain `Float` columns for now (see ADR-007). Phase 1 of the SRS-to-Prisma migration (`docs/features/property-listing-schema/`) added the Property/Listing domain: `City`/`Area`/`Poi`/`AmenityCatalog`/`AccessibilityFeature` (catalog reference data), `HostProfile`/`HostKycDocument` (the SRS `Owner` entity, additively hung off `Host`), and `Property`/`PropertyAmenity`/`PropertyAccessibility`/`PropertyPhoto`/`RatePlan`. Later SRS phases (Booking, Payment, Review, …) are not built yet — see the spec's out-of-scope list.
 - **Redis** is a derived cache (multi-tier: in-memory `CacheableMemory` 60s TTL, falling back to Redis) and the BullMQ job-queue backend — never a source of truth.
@@ -29,7 +34,7 @@ There is no root `package.json`; `api/` and `web/` are managed independently and
 ## Environments
 | Env | URL | Database | Who may touch it |
 |-----|-----|----------|------------------|
-| local | `http://localhost:3001/graphql` (API), `:3000` (guest), `:3002` (host) | local Postgres/PostGIS via `docker-compose` or a local install | anyone |
+| local | `http://localhost:3001/graphql` (API), `:3000` (guest), `:3002` (host) | local Postgres/PostGIS via `docker-compose` (repo root) or a local install | anyone |
 | staging | not set up yet | — | — |
 | production | not set up yet | — | **not the agent** (rule C5) |
 
