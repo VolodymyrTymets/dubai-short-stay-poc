@@ -118,6 +118,106 @@ describe('JwtAuthStrategyService', () => {
     });
   });
 
+  describe('signIn', () => {
+    it('should return accessToken and refreshToken when password matches', async () => {
+      const account = await createAccountWithIdentity('+8888888880');
+      const password = 'correct-password';
+      const passwordHash = await hash(password, 10);
+      await prismaService.accountIdentity.update({
+        where: { accountId: account.id },
+        data: { hash: passwordHash },
+      });
+
+      const result = await jwtAuthStrategyService.signIn({
+        phoneNumber: '+8888888880',
+        password,
+      });
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+      expect(typeof result.accessToken).toBe('string');
+      expect(typeof result.refreshToken).toBe('string');
+    });
+
+    it('should throw UnauthorizedException when password does not match', async () => {
+      const account = await createAccountWithIdentity('+8888888881');
+      const passwordHash = await hash('correct-password', 10);
+      await prismaService.accountIdentity.update({
+        where: { accountId: account.id },
+        data: { hash: passwordHash },
+      });
+
+      await expect(
+        jwtAuthStrategyService.signIn({
+          phoneNumber: '+8888888881',
+          password: 'wrong-password',
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when account does not exist', async () => {
+      await expect(
+        jwtAuthStrategyService.signIn({
+          phoneNumber: '+8888888882',
+          password: 'whatever-password',
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should not mark the phone as verified', async () => {
+      const account = await createAccountWithIdentity('+8888888884');
+      const password = 'correct-password';
+      const passwordHash = await hash(password, 10);
+      await prismaService.accountIdentity.update({
+        where: { accountId: account.id },
+        data: { hash: passwordHash },
+      });
+
+      await jwtAuthStrategyService.signIn({
+        phoneNumber: '+8888888884',
+        password,
+      });
+
+      const profile = await prismaService.accountProfile.findFirst({
+        where: { accountId: account.id },
+      });
+
+      expect(profile.isPhoneVerified).toBe(false);
+    });
+
+    it('should throw UnauthorizedException when the account is soft-deleted', async () => {
+      const account = await createAccountWithIdentity('+8888888885');
+      const password = 'correct-password';
+      const passwordHash = await hash(password, 10);
+      await prismaService.accountIdentity.update({
+        where: { accountId: account.id },
+        data: { hash: passwordHash },
+      });
+      await prismaService.account.update({
+        where: { id: account.id },
+        data: { deleted: true },
+      });
+
+      await expect(
+        jwtAuthStrategyService.signIn({
+          phoneNumber: '+8888888885',
+          password,
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when account has no password set', async () => {
+      await createAccountWithIdentity('+8888888883');
+
+      await expect(
+        jwtAuthStrategyService.signIn({
+          phoneNumber: '+8888888883',
+          password: 'whatever-password',
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
   describe('refreshToken', () => {
     it('should return accessToken and refreshToken strings', async () => {
       const account = await createAccountWithIdentity('+4444444444');

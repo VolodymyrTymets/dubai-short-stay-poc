@@ -204,6 +204,9 @@ type Mutation {
   """Request a one-time SMS code for a phone number"""
   signInOtp(signInInput: SignInInput!): SignInOtpEntity!
 
+  """Sign in with a phone number and password"""
+  signIn(signInPasswordInput: SignInPasswordInput!): AuthTokensEntity!
+
   """Exchange a valid OTP code for access and refresh tokens"""
   verifyOtp(verifyOtpInput: VerifyOtpInput!): AuthTokensEntity!
 
@@ -270,6 +273,14 @@ input UpdateFileInput {
 input SignInInput {
   """phoneNumber"""
   phoneNumber: String!
+}
+
+input SignInPasswordInput {
+  """phoneNumber"""
+  phoneNumber: String!
+
+  """password"""
+  password: String!
 }
 
 input VerifyOtpInput {

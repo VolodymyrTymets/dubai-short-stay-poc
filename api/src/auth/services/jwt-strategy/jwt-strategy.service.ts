@@ -13,7 +13,7 @@ export class JwtStrategyService {
   ) {}
   private readonly BCRYPT_ROUNDS = 10;
 
-  async refreshTokens(accountId: string) {
+  async issueTokens(accountId: string) {
     const payload = {
       sub: accountId,
       jti: crypto.randomBytes(4).toString('hex'),
@@ -41,11 +41,20 @@ export class JwtStrategyService {
       data: { refreshToken: hashedRefreshToken },
     });
 
+    return { accessToken, refreshToken };
+  }
+
+  // WHY: only a flow that actually proves phone ownership (OTP verification,
+  // or refreshing a session that started from one) should mark the phone
+  // verified — password sign-in must not have this side effect.
+  async refreshTokens(accountId: string) {
+    const tokens = await this.issueTokens(accountId);
+
     await this.prismaService.accountProfile.update({
       where: { accountId },
       data: { isPhoneVerified: true },
     });
 
-    return { accessToken, refreshToken };
+    return tokens;
   }
 }

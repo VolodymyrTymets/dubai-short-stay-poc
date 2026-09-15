@@ -42,13 +42,16 @@ build context of `web/` so `web/shared/**` is available at build time). `api/Doc
 ### 1. OTP sign-in
 Client calls `signInOtp` mutation → `AuthService`/`OtpAuthStrategyService` create/find an `Account` + `AccountProfile`, generate and send an OTP via `NotifierModule` (SMS or log strategy) → client calls `verifyOtp` → `JwtAuthStrategyService` issues access + refresh JWTs. Can fail on invalid/expired OTP or an unverified phone.
 
-### 2. Paginated list query
+### 2. Password sign-in
+Client calls the `signIn` mutation with a phone number and password → `JwtAuthStrategyService.signIn` looks up the non-deleted `Account` by phone, bcrypt-compares the password against `AccountIdentity.hash` (always, even when no account/hash is found — compared against a fixed dummy hash — so a miss takes the same time as a real mismatch and can't be timed to detect account existence), and on a match issues access + refresh JWTs via `issueTokens`. Unlike OTP sign-in, this does **not** set `AccountProfile.isPhoneVerified` — password knowledge doesn't prove phone possession, so `refreshTokens` (OTP verification and token refresh) and `issueTokens` (password sign-in) are split for exactly that reason. Fails with `UNAUTHENTICATED` when the account doesn't exist, is soft-deleted, has no password set, or the password doesn't match — the same generic error in all cases, so the response never reveals which. There is no mutation yet to set/change a password (`AccountIdentity.hash`/`salt` are populated only via direct seeding today), and no rate-limiting on either sign-in mutation yet — both are known gaps tracked separately, not addressed by this change.
+
+### 3. Paginated list query
 A GraphQL query with `pagination`/`sorting`/`search` args (`api/src/common/input/*`) reaches a resolver → `PaginationService.findAllPaginated` maps the requested GraphQL fields to a Prisma `select` (`GraphToPrisma`) and runs `findMany` + `count` against the given collection.
 
-### 3. Background job
+### 4. Background job
 API enqueues a job (e.g. SMS) via BullMQ/Redis → the separate worker process (`src/worker.ts`, `WorkerModule`) picks it up and runs the matching consumer in `src/background-workers/`.
 
-### 4. Host property listing (`api/src/property/`)
+### 5. Host property listing (`api/src/property/`)
 Client calls `createProperty` → `PropertyResolver` (role-gated to `HOST`/`ADMIN`) → `PropertyService`
 lazily gets-or-creates the calling account's `Host` row, creates the `Property` row plus its
 `PropertyAmenity`/`PropertyAccessibility`/`PropertyPhoto` joins, `status: DRAFT`. `updateProperty`
