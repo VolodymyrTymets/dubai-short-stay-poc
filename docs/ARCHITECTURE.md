@@ -76,15 +76,23 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
 - `guest`/`host` each have a routed shell now (ADR-008, `react-router` in data mode): a `Layout` per app
   (`guest`: shared `Header` + a `guest`-local `Footer`; `host`: shared `Sidebar` + a `host`-local `Topbar`,
   no footer) wraps `<Outlet/>`. `Home` is still an empty stub page — no real screen content yet. `Sign In`/
-  `Sign Up` now render a shared `AuthCard` (`web/shared/components/AuthCard.tsx`, `AuthOtpInput.tsx`) built
-  to match `designs/dss-v1-web-mockups-html/AuthSignUp.html`: a Log in/Sign up tab switcher, the form
-  fields, and a 6-digit "Confirm your email" panel. This is **UI only** — no `signInOtp`/`verifyOtp`
-  mutation is wired yet, and the form's password fields don't match this repo's actual OTP-only auth flow
-  (`AuthService`/`OtpAuthStrategyService`, flow 1 above) — see `docs/features/auth-sign-in-sign-up/spec.md`
-  open question 1 for the tracked mismatch to resolve when the real mutations are wired. `web/shared/
-  components/` has the full design-system component set (ADR-007) ready to consume; `frontend-react.md`'s
-  rules start mattering fully once a real (data-connected) screen is built inside these shells. `guest`'s
-  prior `ComponentsShowcase` entry point lives at the sibling `/dev/components` route.
+  `Sign Up` render a shared `AuthCard` (`web/shared/components/AuthCard.tsx`) built to match
+  `designs/dss-v1-web-mockups-html/AuthSignUp.html`'s Log in/Sign up tab switcher and form fields, now wired
+  (`auth-mutations-wiring`) to the real `signIn`/`signUp` mutations (email+password — flow 2, not flow 1's
+  OTP path, resolving the mismatch flagged by `auth-sign-in-sign-up`'s open question 1) via each app's own
+  `SignInPage`/`SignUpPage` and a generated typed mutation from `web/shared/api/auth.graphql`. The mockup's
+  6-digit "Confirm your email" panel was dropped from the real flow — `signIn`/`signUp` return tokens
+  directly with no verification step, so the panel has no backend counterpart; `AuthOtpInput.tsx` is now
+  unused (left in place, not deleted — flagged in `auth-mutations-wiring`'s PR body). On success the
+  `accessToken` is persisted to `localStorage` (`web/shared/api/token.ts`) and `web/shared/apollo/client.ts`
+  attaches it as `Authorization: Bearer <token>` to every subsequent request via a `setContext` link. First/
+  last name and the marketing checkbox on the sign-up form are collected but not sent anywhere — `signUp`
+  takes only email+password; wiring names needs a separate `updateAccountProfile` call, deferred. `api/src/
+  main.ts` now calls `app.enableCors()` for the `guest`/`host` dev origins — no browser client had ever
+  called the API cross-origin before this. `web/shared/components/` has the full design-system component
+  set (ADR-007) ready to consume; `frontend-react.md`'s rules start mattering fully once a real
+  (data-connected) screen is built inside these shells. `guest`'s prior `ComponentsShowcase` entry point
+  lives at the sibling `/dev/components` route.
 - `yarn start:dev`, `yarn test:e2e` (via full `AppModule`) and `yarn codegen` need live Postgres/PostGIS + Redis; `yarn test` (unit) and the rest of `yarn test:e2e` run standalone against in-memory PGlite.
 - No CI existed before this PR; `api/`'s lint (55 pre-existing problems) and one placeholder e2e test (`expect(true).toEqual(false)` in `update-account-profile.e2e-spec.ts`) are known, pre-existing failures — not introduced by this setup.
 - `yarn test:e2e`'s default (parallel) Jest workers can flake under load as the e2e suite grows — each worker boots its own in-memory PGlite + full `AppModule` (BullMQ/Redis included), and the default 5000ms hook timeout can be exceeded by CPU contention alone, not a real bug. `yarn test:e2e --runInBand` runs serially and is the reliable way to get a clean signal; it can hang on exit due to an unrelated pre-existing open-handle issue (Jest logs "did not exit one second after the test run has completed") — the test results themselves print before that hang, so read those and don't wait for the process to exit on its own.
