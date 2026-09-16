@@ -44,7 +44,10 @@ export class FilesService {
     });
   }
 
-  findFile(fileId: string) {
+  async findFile(fileId: string) {
+    console.log('findFile', fileId);
+    const file = await this.prisma.file.findUnique({ where: { id: fileId } });
+    console.log('findFile', file);
     return this.prisma.file.findUnique({ where: { id: fileId } });
   }
 }

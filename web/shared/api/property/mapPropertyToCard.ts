@@ -42,10 +42,11 @@ function subtitleFrom(description: string): string {
 
 export function mapPropertyToCard(property: PropertyRow): Omit<PropertyCardProps, 'onToggleFavorite' | 'isFavorited'> {
   const totalAed = property.basePriceAed * SAMPLE_STAY_NIGHTS + (property.cleaningFeeAed ?? 0)
+  const fileId = property.photos[0]?.fileId
 
   return {
     href: `/property/${property.slug}`,
-    imageSrc: PLACEHOLDER_IMAGE,
+    fileId: fileId,
     imageAlt: property.title,
     title: property.title,
     subtitle: subtitleFrom(property.description),

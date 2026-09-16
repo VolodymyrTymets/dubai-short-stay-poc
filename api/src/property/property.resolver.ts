@@ -1,4 +1,12 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ResolveField,
+  Parent,
+  Info,
+} from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { PropertyEntity } from './entities/property.entity';
 import { PropertyService } from './property.service';
@@ -12,6 +20,9 @@ import { Roles } from '../decorators/roles.decorator';
 import { CurrentAccount } from '../decorators/current-account.decorator';
 import type { AuthAccount } from '../auth/strategies/jwt.strategy';
 import { AccountRoleType } from '../../generated/prisma/enums';
+import { AccountProfileEntity } from '../account-profile/entities/account-profile.entity';
+import { AccountEntity } from '../account/entities/account.entity';
+import type { GraphQLResolveInfo } from 'graphql/type/index';
 
 @Resolver(() => PropertyEntity)
 export class PropertyResolver {

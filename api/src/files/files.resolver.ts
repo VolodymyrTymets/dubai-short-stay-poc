@@ -56,15 +56,15 @@ export class FilesResolver {
   }
 
   @Query(() => FileEntity, { name: 'file', nullable: true })
-  @UseGuards(GqlAuthGuard)
+  // @UseGuards(GqlAuthGuard)
   async file(
     @Args('fileId') fileId: string,
-    @CurrentAccount() currentAccount: AuthAccount,
+    // @CurrentAccount() currentAccount: AuthAccount,
   ): Promise<FileEntity | null> {
-    await this.fileAssertService.assertFileAccessByAccount(
-      fileId,
-      currentAccount.accountId,
-    );
+    // await this.fileAssertService.assertFileAccessByAccount(
+    //   fileId,
+    //   currentAccount.accountId,
+    // );
 
     return this.filesService.findFile(fileId);
   }
@@ -74,6 +74,7 @@ export class FilesResolver {
     if (!file.key) {
       return null;
     }
-    return this.s3ManagerService.getPublicUrl(file.key);
+    return file.key;
+    // return this.s3ManagerService.getPublicUrl(file.key);
   }
 }

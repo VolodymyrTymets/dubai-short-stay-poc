@@ -17,6 +17,7 @@ export const PROPERTIES_QUERY = gql`query Properties($pagination: PaginationInpu
         description
         photos {
             id
+            fileId
         }
     }
 }`
@@ -47,6 +48,7 @@ export const PROPERTY_BY_SLUG_QUERY = gql`query PropertyBySlug($slug: String!) {
         reviewCount
         photos {
             id
+            fileId
         }
     }
 }`
