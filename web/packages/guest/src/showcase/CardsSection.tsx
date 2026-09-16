@@ -7,6 +7,7 @@ export function CardsSection() {
     <Section title="Property card & booking card">
       <div className="flex gap-8 items-start flex-wrap">
         <PropertyCard
+          href="#"
           imageSrc="/marina.svg"
           imageAlt="Apartment in Dubai Marina"
           title="Apartment in Dubai Marina"
@@ -19,6 +20,7 @@ export function CardsSection() {
           photoCount={5}
         />
         <PropertyCard
+          href="#"
           imageSrc="/living.svg"
           imageAlt="Studio in Business Bay"
           title="Studio in Business Bay"

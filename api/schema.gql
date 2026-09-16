@@ -168,6 +168,11 @@ type Query {
   """
   properties(pagination: PaginationInput, search: SearchInput): [PropertyEntity!]!
 
+  """
+  Public lookup of one live property listing by slug — no authentication required (guest-facing counterpart to the owner-scoped `property` query)
+  """
+  propertyBySlug(slug: String!): PropertyEntity
+
   """List the current host's own property listings"""
   myProperties(pagination: PaginationInput, search: SearchInput): [PropertyEntity!]!
 }

@@ -1,13 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import request from 'supertest';
+import { App } from 'supertest/types';
 import { PrismaModule } from '../../src/prisma/prisma.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { AppModule } from '../../src/app.module';
 import { DataCooker } from '../utils/DataCooker/DataCooker';
 import {
   PropertyStatus,
   PropertyType,
   CancellationPolicy,
 } from '../../generated/prisma/enums';
+import type { GraphQLResponseType } from '../utils/e2e-services/interfaces/types';
 
 describe('Property (e2e)', () => {
   let prismaService: PrismaService;
@@ -176,5 +181,140 @@ describe('Property (e2e)', () => {
 
     expect(property.Amenities).toEqual([]);
     expect(property.Accessibility).toEqual([]);
+  });
+
+  describe('propertyBySlug (public query)', () => {
+    let app: INestApplication<App>;
+
+    beforeEach(async () => {
+      const moduleFixture: TestingModule = await Test.createTestingModule({
+        imports: [AppModule],
+      }).compile();
+      app = moduleFixture.createNestApplication();
+      app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+      await app.init();
+    });
+
+    afterEach(async () => {
+      await app.close();
+    });
+
+    const queryPropertyBySlug = (slug: string) =>
+      request(app.getHttpServer())
+        .post('/graphql')
+        .send({
+          query: `query {
+            propertyBySlug(slug: "${slug}") {
+              id
+              slug
+              status
+              title
+            }
+          }`,
+        })
+        .expect(200) as Promise<
+        GraphQLResponseType<{
+          propertyBySlug: {
+            id: string;
+            slug: string;
+            status: string;
+            title: string;
+          } | null;
+        }>
+      >;
+
+    it('returns a LIVE property by slug with no authentication', async () => {
+      const { host, city, area } = await seedOwnerAndLocation('public-live');
+      const property = await prismaService.property.create({
+        data: {
+          slug: 'marina-loft-public-live',
+          title: 'Marina Loft',
+          description: 'A loft with a view.',
+          propertyType: PropertyType.APARTMENT,
+          bedrooms: 2,
+          bathrooms: 1.5,
+          maxGuests: 4,
+          beds: [{ type: 'queen', count: 1 }],
+          areaId: area.id,
+          cityId: city.id,
+          lat: 25.08,
+          lng: 55.14,
+          basePriceAed: 500,
+          ownerId: host.id,
+          commissionPct: 12,
+          status: PropertyStatus.LIVE,
+        },
+      });
+
+      const response = await queryPropertyBySlug(property.slug);
+
+      expect(response.body.data.propertyBySlug).not.toBeNull();
+      expect(response.body.data.propertyBySlug?.id).toEqual(property.id);
+      expect(response.body.data.propertyBySlug?.status).toEqual('LIVE');
+      expect(response.body.data.propertyBySlug?.title).toEqual('Marina Loft');
+    });
+
+    it('returns null for a DRAFT property (never leaks a non-live listing)', async () => {
+      const { host, city, area } = await seedOwnerAndLocation('public-draft');
+      const property = await prismaService.property.create({
+        data: {
+          slug: 'marina-loft-public-draft',
+          title: 'Marina Loft Draft',
+          description: 'A loft with a view.',
+          propertyType: PropertyType.APARTMENT,
+          bedrooms: 2,
+          bathrooms: 1.5,
+          maxGuests: 4,
+          beds: [{ type: 'queen', count: 1 }],
+          areaId: area.id,
+          cityId: city.id,
+          lat: 25.08,
+          lng: 55.14,
+          basePriceAed: 500,
+          ownerId: host.id,
+          commissionPct: 12,
+          // status defaults to DRAFT
+        },
+      });
+
+      const response = await queryPropertyBySlug(property.slug);
+
+      expect(response.body.data.propertyBySlug).toBeNull();
+    });
+
+    it('returns null for a soft-deleted LIVE property (never leaks a deleted listing)', async () => {
+      const { host, city, area } = await seedOwnerAndLocation('public-deleted');
+      const property = await prismaService.property.create({
+        data: {
+          slug: 'marina-loft-public-deleted',
+          title: 'Marina Loft Deleted',
+          description: 'A loft with a view.',
+          propertyType: PropertyType.APARTMENT,
+          bedrooms: 2,
+          bathrooms: 1.5,
+          maxGuests: 4,
+          beds: [{ type: 'queen', count: 1 }],
+          areaId: area.id,
+          cityId: city.id,
+          lat: 25.08,
+          lng: 55.14,
+          basePriceAed: 500,
+          ownerId: host.id,
+          commissionPct: 12,
+          status: PropertyStatus.LIVE,
+          deleted: true,
+        },
+      });
+
+      const response = await queryPropertyBySlug(property.slug);
+
+      expect(response.body.data.propertyBySlug).toBeNull();
+    });
+
+    it('returns null for an unknown slug', async () => {
+      const response = await queryPropertyBySlug('does-not-exist');
+
+      expect(response.body.data.propertyBySlug).toBeNull();
+    });
   });
 });

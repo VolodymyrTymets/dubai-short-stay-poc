@@ -248,6 +248,17 @@ export class PropertyService {
     return this.toEntity(property);
   }
 
+  async findPublicPropertyBySlug(slug: string) {
+    const property = await this.prisma.property.findUnique({
+      where: { slug, status: PropertyStatus.LIVE, deleted: false },
+      include: PROPERTY_INCLUDE,
+    });
+    if (!property) {
+      return null;
+    }
+    return this.toEntity(property);
+  }
+
   async findAllProperties(pagination: PaginationInput, search?: SearchInput) {
     const orderBy = pagination.orderBy
       .filter((sort) => SORTABLE_FIELDS.has(sort.field))

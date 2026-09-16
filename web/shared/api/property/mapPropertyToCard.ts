@@ -44,6 +44,7 @@ export function mapPropertyToCard(property: PropertyRow): Omit<PropertyCardProps
   const totalAed = property.basePriceAed * SAMPLE_STAY_NIGHTS + (property.cleaningFeeAed ?? 0)
 
   return {
+    href: `/property/${property.slug}`,
     imageSrc: PLACEHOLDER_IMAGE,
     imageAlt: property.title,
     title: property.title,

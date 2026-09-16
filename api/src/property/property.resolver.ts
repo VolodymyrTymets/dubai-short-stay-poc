@@ -83,6 +83,17 @@ export class PropertyResolver {
     );
   }
 
+  @Query(() => PropertyEntity, {
+    name: 'propertyBySlug',
+    nullable: true,
+    description:
+      'Public lookup of one live property listing by slug — no authentication required (guest-facing counterpart to the owner-scoped `property` query)',
+  })
+  // Intentionally no @UseGuards(GqlAuthGuard)/@Roles — same public-query convention as `properties` above.
+  propertyBySlug(@Args('slug') slug: string) {
+    return this.propertyService.findPublicPropertyBySlug(slug);
+  }
+
   @Query(() => [PropertyEntity], {
     name: 'myProperties',
     description: "List the current host's own property listings",
