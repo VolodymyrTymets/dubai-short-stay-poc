@@ -250,14 +250,10 @@ export class PropertyService {
 
   async findPublicPropertyBySlug(slug: string) {
     const property = await this.prisma.property.findUnique({
-      where: { slug },
+      where: { slug, status: PropertyStatus.LIVE, deleted: false },
       include: PROPERTY_INCLUDE,
     });
-    if (
-      !property ||
-      property.status !== PropertyStatus.LIVE ||
-      property.deleted
-    ) {
+    if (!property) {
       return null;
     }
     return this.toEntity(property);

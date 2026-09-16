@@ -81,7 +81,7 @@ export function PropertyDetailPage() {
   }
 
   const galleryCount = Math.min(Math.max(property.photos.length, 1), MAX_GALLERY_TILES)
-  const showRating = property.reviewCount >= MIN_REVIEWS_FOR_RATING
+  const showRating = property.rating != null && property.reviewCount >= MIN_REVIEWS_FOR_RATING
 
   return (
     <div className="w-[1120px] mx-auto py-8 pb-20 flex flex-col gap-8">

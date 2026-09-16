@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { PrismaModule } from '../../src/prisma/prisma.module';
@@ -191,6 +191,7 @@ describe('Property (e2e)', () => {
         imports: [AppModule],
       }).compile();
       app = moduleFixture.createNestApplication();
+      app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
       await app.init();
     });
 
@@ -273,6 +274,35 @@ describe('Property (e2e)', () => {
           ownerId: host.id,
           commissionPct: 12,
           // status defaults to DRAFT
+        },
+      });
+
+      const response = await queryPropertyBySlug(property.slug);
+
+      expect(response.body.data.propertyBySlug).toBeNull();
+    });
+
+    it('returns null for a soft-deleted LIVE property (never leaks a deleted listing)', async () => {
+      const { host, city, area } = await seedOwnerAndLocation('public-deleted');
+      const property = await prismaService.property.create({
+        data: {
+          slug: 'marina-loft-public-deleted',
+          title: 'Marina Loft Deleted',
+          description: 'A loft with a view.',
+          propertyType: PropertyType.APARTMENT,
+          bedrooms: 2,
+          bathrooms: 1.5,
+          maxGuests: 4,
+          beds: [{ type: 'queen', count: 1 }],
+          areaId: area.id,
+          cityId: city.id,
+          lat: 25.08,
+          lng: 55.14,
+          basePriceAed: 500,
+          ownerId: host.id,
+          commissionPct: 12,
+          status: PropertyStatus.LIVE,
+          deleted: true,
         },
       });
 
