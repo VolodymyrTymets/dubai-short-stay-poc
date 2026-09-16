@@ -142,6 +142,29 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
   by both apps via `useSignInMutation`/`useSignUpMutation`-style hooks instead of `useMutation(...Document)`.
   Run it as `(cd web && yarn codegen)`, not per-package. `web/packages/guest/codegen.ts` and
   `web/packages/host/codegen.ts` no longer exist.
+- **A guest-facing property detail page exists** (`property-details`): a new public, unauthenticated
+  `propertyBySlug(slug: String!)` query (`api/src/property/property.resolver.ts`/`property.service.ts`,
+  sibling to the existing `properties` list query — same `status: LIVE, deleted: false` visibility rule,
+  same bare-`@Query` public convention) backs a new `PropertyDetailPage`
+  (`web/packages/guest/src/pages/PropertyDetailPage.tsx`, route `/property/:slug`) built to
+  `designs/dss-v1-web-mockups-html/PropertyDetail.html`. `PropertyCard` (`web/shared/components/
+  PropertyCard.tsx`, shared by `HomePage` and `SearchResultsPage`) now takes a required `href` prop and
+  renders as a "stretched link" (an absolutely-positioned `react-router` `Link` covering the card, with the
+  existing favorite button raised above it via `z-index` rather than nested inside an `<a>`) so a card click
+  navigates there. Several mockup sections are **not** built, matching `guest-home-search`'s
+  mocked/decorative-field convention rather than fabricating data: any interactive booking (date picker,
+  guest counter, "Reserve") — no `Booking` model exists and `BUSINESS_MODEL.md` forbids fabricated
+  payment logic, so the price card shows real `basePriceAed`/`cleaningFeeAed` with a disabled, non-functional
+  "Reserve" button; individual reviews and per-category rating bars — no `Review` model, only the existing
+  aggregate `rating`/`reviewCount` are shown; the "Where you'll be" map/POI section — no `Poi` query is
+  exposed over GraphQL and no map library is installed; named amenity/accessibility chips — `PropertyEntity`
+  only exposes raw `amenityIds`/`accessibilityIds`, no query resolves `AmenityCatalog`/
+  `AccessibilityFeature` labels yet, so only a real count is shown ("N amenities included"); "Hosted by
+  <name>" — no host display name is exposed over GraphQL, shown as static copy instead; the per-bedroom
+  gallery — `Property.beds` is a flat `{type, count}[]`, not per-bedroom. See
+  `docs/features/property-details/spec.md`'s out-of-scope table for the full list — a follow-up ticket
+  should add a small public catalog query (`AmenityCatalog`/`AccessibilityFeature`/`Poi`) and a host
+  display-name field once a screen needs them for real.
 - `yarn start:dev`, `yarn test:e2e` (via full `AppModule`) and `yarn codegen` need live Postgres/PostGIS + Redis; `yarn test` (unit) and the rest of `yarn test:e2e` run standalone against in-memory PGlite.
 - No CI existed before this PR; `api/`'s lint (55 pre-existing problems) and one placeholder e2e test (`expect(true).toEqual(false)` in `update-account-profile.e2e-spec.ts`) are known, pre-existing failures — not introduced by this setup.
 - `yarn test:e2e`'s default (parallel) Jest workers can flake under load as the e2e suite grows — each worker boots its own in-memory PGlite + full `AppModule` (BullMQ/Redis included), and the default 5000ms hook timeout can be exceeded by CPU contention alone, not a real bug. `yarn test:e2e --runInBand` runs serially and is the reliable way to get a clean signal; it can hang on exit due to an unrelated pre-existing open-handle issue (Jest logs "did not exit one second after the test run has completed") — the test results themselves print before that hang, so read those and don't wait for the process to exit on its own.
