@@ -3,13 +3,7 @@ import { usePropertyBySlugQuery } from '../../../../shared/api/generated.graphql
 import { Badge } from '../../../../shared/components/Badge'
 import { Button } from '../../../../shared/components/Button'
 import { BoltIcon, StarIcon, HomeIcon } from '../../../../shared/components/icons'
-
-// No real listing photo can be resolved yet — same known gap as mapPropertyToCard.ts
-// (PropertyPhotoEntity has no public URL field). Flat cream-300 tile, matching the mockup's own
-// pre-photo placeholder colour.
-const PLACEHOLDER_IMAGE =
-  'data:image/svg+xml,' +
-  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="600" height="600" fill="#E6DDCD"/></svg>')
+import { Image } from "../../../../shared/components/Image.tsx";
 
 const MAX_GALLERY_TILES = 5
 const MIN_REVIEWS_FOR_RATING = 3
@@ -88,16 +82,27 @@ export function PropertyDetailPage() {
       <div className="flex justify-between items-end gap-6">
         <div className="flex flex-col gap-2">
           <Badge>{property.propertyType}</Badge>
-          <h1 className="font-serif font-medium text-4xl leading-10 tracking-[-0.25px] text-ink">{property.title}</h1>
+          <h1 className="font-serif font-medium text-4xl leading-10 tracking-[-0.25px] text-ink">
+            {property.title}
+          </h1>
         </div>
       </div>
 
       <div className="grid grid-cols-[2fr_1fr_1fr] grid-rows-2 gap-2 rounded-2xl overflow-hidden">
         <div className="row-span-2">
-          <img src={PLACEHOLDER_IMAGE} alt={property.title} className="w-full h-[424px] object-cover block" />
+          <Image
+            id={property.photos[0].fileId}
+            alt={property.title}
+            className="w-full h-[424px] object-cover block"
+          />
         </div>
         {Array.from({ length: Math.max(galleryCount - 1, 0) }).map((_, i) => (
-          <img key={i} src={PLACEHOLDER_IMAGE} alt="" className="w-full h-[208px] object-cover block" />
+          <Image
+            key={i}
+            id={property.photos[0].fileId}
+            alt=""
+            className="w-full h-[208px] object-cover block"
+          />
         ))}
       </div>
 
@@ -108,18 +113,24 @@ export function PropertyDetailPage() {
               {`Entire ${property.propertyType.toLowerCase()}`}
             </h2>
             <span className="text-base text-ink-secondary">
-              {`${property.maxGuests} guest${property.maxGuests === 1 ? '' : 's'} · ${bedroomsLabel(property.bedrooms)} · ${bedsLabel(property.beds)} · ${property.bathrooms} bath${property.bathrooms === 1 ? '' : 's'}`}
+              {`${property.maxGuests} guest${property.maxGuests === 1 ? "" : "s"} · ${bedroomsLabel(property.bedrooms)} · ${bedsLabel(property.beds)} · ${property.bathrooms} bath${property.bathrooms === 1 ? "" : "s"}`}
             </span>
             <div className="flex items-center gap-1.5 mt-1">
               {showRating ? (
                 <>
                   <StarIcon size={14} className="text-ink" />
-                  <span className="text-base font-semibold text-ink">{property.rating?.toFixed(2)}</span>
+                  <span className="text-base font-semibold text-ink">
+                    {property.rating?.toFixed(2)}
+                  </span>
                   <span className="text-base text-ink-secondary">·</span>
-                  <span className="text-base font-semibold text-ink underline">{property.reviewCount} reviews</span>
+                  <span className="text-base font-semibold text-ink underline">
+                    {property.reviewCount} reviews
+                  </span>
                 </>
               ) : (
-                <span className="text-base font-semibold text-ink-accent">New listing</span>
+                <span className="text-base font-semibold text-ink-accent">
+                  New listing
+                </span>
               )}
             </div>
           </div>
@@ -130,9 +141,15 @@ export function PropertyDetailPage() {
               not a fabricated name, matching the mocked/decorative convention used elsewhere on this page. */}
           <div className="flex items-center gap-4 py-6">
             <div className="w-12 h-12 rounded-full shrink-0 flex items-center justify-center bg-navy-900">
-              <HomeIcon size={20} strokeWidth={1.75} className="text-gold-300" />
+              <HomeIcon
+                size={20}
+                strokeWidth={1.75}
+                className="text-gold-300"
+              />
             </div>
-            <span className="text-base font-semibold text-ink">Hosted by a DubaiShortStay host</span>
+            <span className="text-base font-semibold text-ink">
+              Hosted by a DubaiShortStay host
+            </span>
           </div>
 
           <div className="h-px bg-line" />
@@ -140,23 +157,39 @@ export function PropertyDetailPage() {
           <div className="flex flex-col gap-6 py-7">
             {property.isInstantBook && (
               <div className="flex gap-5">
-                <BoltIcon size={26} strokeWidth={1.75} className="text-ink shrink-0" />
+                <BoltIcon
+                  size={26}
+                  strokeWidth={1.75}
+                  className="text-ink shrink-0"
+                />
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-base font-semibold text-ink">Instant Book</span>
+                  <span className="text-base font-semibold text-ink">
+                    Instant Book
+                  </span>
                   <span className="text-sm text-ink-muted">
-                    Your booking is confirmed straight away — no waiting for host approval.
+                    Your booking is confirmed straight away — no waiting for
+                    host approval.
                   </span>
                 </div>
               </div>
             )}
             {property.detPermitNumber && (
               <div className="flex gap-5">
-                <HomeIcon size={26} strokeWidth={1.75} className="text-ink shrink-0" />
+                <HomeIcon
+                  size={26}
+                  strokeWidth={1.75}
+                  className="text-ink shrink-0"
+                />
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-base font-semibold text-ink">DET-licensed holiday home</span>
+                  <span className="text-base font-semibold text-ink">
+                    DET-licensed holiday home
+                  </span>
                   <span className="text-sm text-ink-muted">
-                    Permit <span className="font-mono text-[13px]">{property.detPermitNumber}</span> · verified by
-                    DubaiShortStay
+                    Permit{" "}
+                    <span className="font-mono text-[13px]">
+                      {property.detPermitNumber}
+                    </span>{" "}
+                    · verified by DubaiShortStay
                   </span>
                 </div>
               </div>
@@ -166,26 +199,34 @@ export function PropertyDetailPage() {
           <div className="h-px bg-line" />
 
           <div className="py-7 flex flex-col gap-3">
-            <p className="text-base leading-6 text-ink">{property.description}</p>
+            <p className="text-base leading-6 text-ink">
+              {property.description}
+            </p>
           </div>
 
           <div className="h-px bg-line" />
 
           <div className="py-7 flex flex-col gap-5">
-            <h3 className="font-serif font-semibold text-2xl leading-[30px] text-ink">What this place offers</h3>
+            <h3 className="font-serif font-semibold text-2xl leading-[30px] text-ink">
+              What this place offers
+            </h3>
             <p className="text-base text-ink-secondary">
-              {property.amenityIds.length} amenit{property.amenityIds.length === 1 ? 'y' : 'ies'} included
+              {property.amenityIds.length} amenit
+              {property.amenityIds.length === 1 ? "y" : "ies"} included
               {property.accessibilityIds.length > 0 &&
-                ` · ${property.accessibilityIds.length} accessibility feature${property.accessibilityIds.length === 1 ? '' : 's'}`}
+                ` · ${property.accessibilityIds.length} accessibility feature${property.accessibilityIds.length === 1 ? "" : "s"}`}
             </p>
           </div>
 
           <div className="h-px bg-line" />
 
           <div className="py-7 flex flex-col gap-3">
-            <h3 className="font-serif font-semibold text-2xl leading-[30px] text-ink">Cancellation policy</h3>
+            <h3 className="font-serif font-semibold text-2xl leading-[30px] text-ink">
+              Cancellation policy
+            </h3>
             <p className="text-base text-ink-secondary">
-              {CANCELLATION_POLICY_LABEL[property.cancellationPolicy] ?? property.cancellationPolicy}
+              {CANCELLATION_POLICY_LABEL[property.cancellationPolicy] ??
+                property.cancellationPolicy}
             </p>
           </div>
         </div>
@@ -194,25 +235,30 @@ export function PropertyDetailPage() {
           <div className="w-[400px] bg-surface border border-line rounded-2xl shadow-card p-6 flex flex-col gap-5">
             <div className="flex items-baseline justify-between">
               <div className="flex items-baseline gap-1.5">
-                <span className="price text-[28px] leading-8 text-ink">{formatAed(property.basePriceAed, property.currency)}</span>
+                <span className="price text-[28px] leading-8 text-ink">
+                  {formatAed(property.basePriceAed, property.currency)}
+                </span>
                 <span className="text-base text-ink-secondary">night</span>
               </div>
             </div>
             {property.cleaningFeeAed != null && (
               <div className="flex justify-between gap-4">
                 <span className="text-base text-ink">Cleaning fee</span>
-                <span className="text-base text-ink whitespace-nowrap">{formatAed(property.cleaningFeeAed, property.currency)}</span>
+                <span className="text-base text-ink whitespace-nowrap">
+                  {formatAed(property.cleaningFeeAed, property.currency)}
+                </span>
               </div>
             )}
             <Button variant="primary" size="lg" className="w-full" disabled>
               Reserve
             </Button>
             <p className="text-xs text-ink-muted text-center">
-              Booking isn't available in this preview yet — dates and payment aren't wired up.
+              Booking isn't available in this preview yet — dates and payment
+              aren't wired up.
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

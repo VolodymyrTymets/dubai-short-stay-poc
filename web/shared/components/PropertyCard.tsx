@@ -1,27 +1,30 @@
-import { Link } from 'react-router'
-import { HeartIcon, StarIcon } from './icons'
-import { CuratedBadge } from './Badge'
+import { Link } from "react-router";
+import { HeartIcon, StarIcon } from "./icons";
+import { CuratedBadge } from "./Badge";
+import { Image } from "./Image";
 
 export type PropertyCardProps = {
-  href: string
-  imageSrc: string
-  imageAlt: string
-  title: string
-  subtitle: string
-  details: string
-  pricePerNight: string
-  totalPrice: string
+  href: string;
+  fileId?: string;
+  imageAlt: string;
+  title: string;
+  subtitle: string;
+  details: string;
+  pricePerNight: string;
+  totalPrice: string;
   /** Omit to show "New" instead of a rating (fewer than 3 reviews). */
-  rating?: number
-  favoriteBadge?: string
-  isFavorited?: boolean
-  onToggleFavorite?: () => void
-  photoCount?: number
-}
+  rating?: number;
+  favoriteBadge?: string;
+  isFavorited?: boolean;
+  onToggleFavorite?: () => void;
+  photoCount?: number;
+  imageSrc?: string;
+};
 
 export function PropertyCard({
   href,
   imageSrc,
+  fileId,
   imageAlt,
   title,
   subtitle,
@@ -38,9 +41,24 @@ export function PropertyCard({
     <div className="relative flex flex-col gap-3 w-[302px] shrink-0">
       {/* Stretched link: covers the whole card so it's one keyboard-reachable link, without nesting
           the favorite <button> below inside an <a> (invalid HTML). The button sits above it via z-10. */}
-      <Link to={href} aria-label={title} className="absolute inset-0 z-0 rounded-xl" />
+      <Link
+        to={href}
+        aria-label={title}
+        className="absolute inset-0 z-0 rounded-xl"
+      />
       <div className="relative w-full h-[287px] rounded-xl overflow-hidden bg-cream-300 shrink-0 pointer-events-none">
-        <img src={imageSrc} alt={imageAlt} className="w-full h-full object-cover block" />
+        <Image
+          id={fileId}
+          alt={imageAlt}
+          className="w-full h-full object-cover block"
+        />
+        {imageSrc && (
+          <img
+            src={imageSrc}
+            alt={imageAlt}
+            className="w-full h-full object-cover block"
+          />
+        )}
         {favoriteBadge && (
           <div className="absolute left-3 top-3">
             <CuratedBadge>{favoriteBadge}</CuratedBadge>
@@ -49,7 +67,9 @@ export function PropertyCard({
         <button
           type="button"
           onClick={onToggleFavorite}
-          aria-label={isFavorited ? 'Remove from favorites' : 'Save to favorites'}
+          aria-label={
+            isFavorited ? "Remove from favorites" : "Save to favorites"
+          }
           aria-pressed={isFavorited}
           className="absolute right-3 top-3 z-10 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-surface rounded-full"
         >
@@ -66,7 +86,7 @@ export function PropertyCard({
             {Array.from({ length: photoCount }).map((_, i) => (
               <span
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full bg-surface ${i === 0 ? 'opacity-100' : 'opacity-60'}`}
+                className={`w-1.5 h-1.5 rounded-full bg-surface ${i === 0 ? "opacity-100" : "opacity-60"}`}
               />
             ))}
           </div>
@@ -83,7 +103,9 @@ export function PropertyCard({
               <span className="text-sm text-ink">{rating.toFixed(2)}</span>
             </div>
           ) : (
-            <span className="text-sm font-semibold text-ink-accent shrink-0">New</span>
+            <span className="text-sm font-semibold text-ink-accent shrink-0">
+              New
+            </span>
           )}
         </div>
         <span className="text-sm text-ink-muted">{subtitle}</span>
@@ -91,9 +113,11 @@ export function PropertyCard({
         <div className="flex items-baseline gap-1.5 mt-1.5">
           <span className="price text-xl text-ink">{pricePerNight}</span>
           <span className="text-sm text-ink-secondary">night</span>
-          <span className="text-sm text-ink-muted underline">· {totalPrice}</span>
+          <span className="text-sm text-ink-muted underline">
+            · {totalPrice}
+          </span>
         </div>
       </div>
     </div>
-  )
+  );
 }
