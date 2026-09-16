@@ -131,6 +131,26 @@ scoped to the caller's own `Host` — no public/guest-facing listing query exist
   field exists), and the "total price" (an illustrative fixed 3-night stay, since no `Booking`/length-of-
   stay model exists yet). See `docs/features/guest-home-search/spec.md`'s mocked-field table for the full
   reasoning — a later ticket should replace these once the underlying data exists.
+- **`host` gets a Create Property page** (`create-property`, route `/listings/new`, reachable via the
+  sidebar's "Listings" item): `CreatePropertyPage.tsx` follows `SignUpPage.tsx`/`AuthCard.tsx`'s existing
+  plain-`useState`-controlled form pattern (no form library installed — see below) and calls the real
+  `createProperty` mutation (`api/src/property/property.resolver.ts`) via a new typed
+  `useCreatePropertyMutation` hook, codegen'd from `web/shared/api/property/mutations.ts`. It is a single
+  combined page covering Basics/Location/Pricing/DET & compliance, not the 8-step wizard shown in
+  `designs/dss-v1-web-mockups-html/HostCompliance.html`'s left rail (Photos/Amenities/Availability/
+  Booking & policies etc. don't exist yet) — explicit scope cut, since `createProperty` needs every core
+  field in one atomic call and no wizard state exists to split it across steps. The mockup's DET
+  **classification** radio group, the derived "AED 30 per night" TDF badge, permit **expiry date**,
+  permit **document upload**, and the "Ready to publish" checklist sidebar were all cut too — none has a
+  backing field on `Property` (only `detPermitNumber` and `tdfPerBedroom` do), and building fee-calculation
+  UI around a money-adjacent field the schema doesn't support would fabricate payment/fee logic
+  (`BUSINESS_MODEL.md` non-negotiable); `tdfPerBedroom` is instead a plain "AED per bedroom per night"
+  number input. `areaId`/`cityId` are plain-text inputs — no catalog query exists yet to list `Area`/`City`
+  rows, so a host must paste a known id. The page also knowingly deviates from `frontend-react.md` rule 8
+  (react-hook-form + zod): the rule says to add the library "when the first form ships", but the actual
+  first form (`AuthCard`) already shipped hand-rolled with neither library installed, so this page follows
+  that precedent instead — a human-approved deviation, not an oversight; the rule's wording is stale
+  against actual practice and fixing that repo-wide is a separate, bigger decision.
 - **Web codegen was consolidated from per-package to a single shared setup** (superseding the per-app model
   described in ADR-006 and the original `auth-mutations-wiring` plan): each of `guest`/`host` used to run
   its own `codegen.ts` (`@graphql-codegen/client-preset`) against `.graphql` documents under
