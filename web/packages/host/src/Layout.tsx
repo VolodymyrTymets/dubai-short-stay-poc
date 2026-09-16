@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 import { Logo } from '../../../shared/components/Logo'
 import { Sidebar, type SidebarNavItem } from '../../../shared/components/Sidebar'
 import { Avatar } from '../../../shared/components/Avatar'
@@ -30,6 +30,8 @@ const accountNavItems: SidebarNavItem[] = [
 
 export function Layout() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const activeMainNavId = location.pathname.startsWith('/listings') ? 'listings' : undefined
 
   function handleMainNavSelect(id: string) {
     // TODO(volodymyr, web-page-layout): only "listings" has a real route so far — see the
@@ -49,7 +51,13 @@ export function Layout() {
         {/* TODO(volodymyr, web-page-layout): wire activeId/onSelect once Listings/Calendar/
             Reservations/Messages/Earnings/Verification/Settings each have a real route — this
             ticket only adds Home/Sign In/Sign Up. */}
-        <Sidebar items={mainNavItems} onSelect={handleMainNavSelect} bare ariaLabel="Main" />
+        <Sidebar
+          items={mainNavItems}
+          activeId={activeMainNavId}
+          onSelect={handleMainNavSelect}
+          bare
+          ariaLabel="Main"
+        />
         <Sidebar groupLabel="Account" items={accountNavItems} bare ariaLabel="Account" />
         <div className="flex-1" />
         {/* TODO(volodymyr, web-page-layout): replace with the signed-in Host's real name/DET

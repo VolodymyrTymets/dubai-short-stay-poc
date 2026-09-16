@@ -50,9 +50,15 @@ row reaching `status: DRAFT`).
     the actual first form (`web/shared/components/AuthCard.tsx`) already shipped as a plain
     `useState`-controlled form with no such library installed. Per rule D2 (repo convention over generic
     best practice) and rule C2 (no new runtime dependency without approval), this page follows
-    `AuthCard`'s existing controlled-input pattern instead. `CLAUDE.md`'s note is stale — flagged in the
-    PR body per rule E2 rather than fixed here (fixing it means deciding whether to introduce the
-    library repo-wide, which is bigger than this ticket).
+    `AuthCard`'s existing controlled-input pattern instead — recorded as a settled decision in
+    `docs/decisions/ADR-009-hand-rolled-web-forms.md`.
+  - A Tourism Dirham Fee **authorisation checkbox** — present in the originally approved plan (AC4 below,
+    as first shipped), then dropped after self-review: the reviewer noted a required, legally-worded
+    consent statement ("I authorise DubaiShortStay to collect and remit the Tourism Dirham Fee on my
+    behalf") with no backing field anywhere records that a host ever checked it, which is the same
+    fabricated-money-adjacent-UI problem that got the classification/expiry/upload/derived-fee-badge
+    fields cut above — a human decided to drop the checkbox entirely rather than soften its wording,
+    pending a real `tdfAuthorizedAt`-style field before any such gate ships again.
 
 ## Acceptance criteria
 - [x] AC1 Given a signed-in host, when they click "Listings" in the sidebar, then they land on
@@ -63,9 +69,11 @@ row reaching `status: DRAFT`).
 - [x] AC3 Given the server returns a GraphQL error (e.g. duplicate slug, invalid `areaId`/`cityId` FK),
       when Save is clicked, then the raw error message is shown inline near the form, the form keeps its
       entered values, and Save can be retried without a page reload.
-- [x] AC4 Given the "I authorise DubaiShortStay to collect the Tourism Dirham Fee" checkbox is
+- [x] ~~AC4 Given the "I authorise DubaiShortStay to collect the Tourism Dirham Fee" checkbox is
       unchecked, when Save is clicked, then submission is blocked client-side with an inline message —
-      this is a UI-only gate (no schema field backs it), not sent to the server.
+      this is a UI-only gate (no schema field backs it), not sent to the server.~~ **Dropped after
+      self-review** — see this file's out-of-scope section. The checkbox was removed entirely rather than
+      implemented; no authorisation gate exists on this page.
 - [x] AC5 Given the Discard button, when clicked, then the form is not submitted and the host is
       navigated back to `/`.
 - [x] AC6 Given a `slug` that doesn't match `^[a-z0-9]+(-[a-z0-9]+)*$` or exceeds 80 characters, when

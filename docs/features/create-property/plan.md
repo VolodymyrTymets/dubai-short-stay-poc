@@ -63,8 +63,11 @@ that repo-wide is out of scope for this ticket and is flagged in the PR body rat
 - files: `web/packages/host/src/pages/CreatePropertyPage.tsx` (change: continue from R2)
 - layer: same page component, now wired to `useCreatePropertyMutation` from R1.
 - content: `detPermitNumber` (optional text input), `tdfPerBedroom` (optional number input, labelled
-  "AED per bedroom per night"), the Tourism Dirham Fee authorisation `Checkbox` (client-side-only gate,
-  per spec AC4 — unchecked blocks Save with an inline message, nothing sent to the server for it), Save
+  "AED per bedroom per night"). **Amended post-review:** the Tourism Dirham Fee authorisation `Checkbox`
+  originally planned here (per spec AC4) was dropped entirely during self-review — see spec.md's
+  out-of-scope note; it was a required, legally-worded consent gate with no backing field to record it,
+  the same fabricated-money-adjacent-UI problem the plan already cut the classification/expiry/upload
+  fields for. Save
   (calls the mutation with all R2+R3 fields, disabled and labelled e.g. "Saving…" while
   `useCreatePropertyMutation`'s `loading` is true — `frontend-react.md` rule 7) and Discard
   (`navigate('/')`, per spec AC5) buttons. On success, render the returned `id`/`slug`/`status` inline
@@ -97,12 +100,15 @@ that repo-wide is out of scope for this ticket and is flagged in the PR body rat
 - risk: none.
 
 ## Docs to update in this PR
-- [ ] `docs/features/create-property/spec.md` (acceptance criteria checked off)
-- [ ] `docs/ARCHITECTURE.md` — add a bullet under "Known constraints and landmines" documenting the new
+- [x] `docs/features/create-property/spec.md` (acceptance criteria checked off)
+- [x] `docs/ARCHITECTURE.md` — add a bullet under "Known constraints and landmines" documenting the new
       `host` route/page and its explicit scope cuts (mirrors how `guest-home-search` is documented there)
-- [ ] `docs/DOMAIN_GLOSSARY.md` — not needed, no new domain terms
-- [ ] `docs/decisions/` — no ADR; no new pattern is introduced (follows `AuthCard`'s existing form
-      pattern and `guest-home-search`'s precedent of documenting mocked/cut fields inline)
+- [x] `docs/DOMAIN_GLOSSARY.md` — **amended post-review**: self-review flagged that "DET permit" and
+      "Tourism Dirham Fee (TDF)" are new user-facing nouns in this PR's UI copy, so two rows were added
+      (rule E1) — the original "not needed" call was wrong.
+- [x] `docs/decisions/` — **amended post-review**: `ADR-009-hand-rolled-web-forms.md` records the
+      hand-rolled-forms-vs-`frontend-react.md`-rule-8 decision as settled, per the reviewer's suggestion
+      that the underlying rule conflict (not just this PR's instance of it) should be traceable.
 
 ## Risks
 | Risk | Impact | Cheapest way to find out early |
