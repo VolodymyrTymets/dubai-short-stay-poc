@@ -16,6 +16,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/graphql', res => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
     networks:
       - my_network
     develop:
@@ -66,7 +72,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d trukkit"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dubai-short-stay-poc"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -102,7 +108,9 @@ services:
     env_file:
       - ./web/packages/guest/.env
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    command: ["sh", "-c", "cd /usr/src/app && VITE_GRAPHQL_URL=http://api:3001/graphql yarn codegen && cd /usr/src/app/packages/guest && yarn dev -- --host 0.0.0.0"]
     networks:
       - my_network
     develop:
@@ -134,7 +142,9 @@ services:
     env_file:
       - ./web/packages/host/.env
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    command: ["sh", "-c", "cd /usr/src/app && VITE_GRAPHQL_URL=http://api:3001/graphql yarn codegen && cd /usr/src/app/packages/host && yarn dev -- --host 0.0.0.0"]
     networks:
       - my_network
     develop:
