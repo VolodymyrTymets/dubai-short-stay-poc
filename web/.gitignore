@@ -25,3 +25,4 @@ dist-ssr
 *.sln
 *.sw?
 shared/api/generated.graphql.tsx
+introspection.json
