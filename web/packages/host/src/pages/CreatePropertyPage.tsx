@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Input } from '../../../../shared/components/Input'
 import { Radio } from '../../../../shared/components/Radio'
 import { Checkbox } from '../../../../shared/components/Checkbox'
-import type { PropertyType } from '../../../../shared/api/generated.graphql'
+import { Button } from '../../../../shared/components/Button'
+import { useCreatePropertyMutation, type PropertyType } from '../../../../shared/api/generated.graphql'
 
 const PROPERTY_TYPES: Array<{ value: PropertyType; label: string }> = [
   { value: 'APARTMENT', label: 'Apartment' },
@@ -40,6 +42,9 @@ export type CreatePropertyFormState = {
   basePriceAed: string
   cleaningFeeAed: string
   isInstantBook: boolean
+  detPermitNumber: string
+  tdfPerBedroom: string
+  tdfAuthorized: boolean
 }
 
 const initialFormState: CreatePropertyFormState = {
@@ -60,6 +65,9 @@ const initialFormState: CreatePropertyFormState = {
   basePriceAed: '',
   cleaningFeeAed: '',
   isInstantBook: true,
+  detPermitNumber: '',
+  tdfPerBedroom: '',
+  tdfAuthorized: false,
 }
 
 export type CreatePropertyFormErrors = Partial<
@@ -78,7 +86,10 @@ export type CreatePropertyFormErrors = Partial<
     | 'lat'
     | 'lng'
     | 'basePriceAed'
-    | 'cleaningFeeAed',
+    | 'cleaningFeeAed'
+    | 'detPermitNumber'
+    | 'tdfPerBedroom'
+    | 'tdfAuthorized',
     string
   >
 >
@@ -149,12 +160,30 @@ function validate(form: CreatePropertyFormState): CreatePropertyFormErrors {
     }
   }
 
+  if (form.detPermitNumber.length > 64) {
+    errors.detPermitNumber = 'DET permit number must be 64 characters or fewer'
+  }
+
+  if (form.tdfPerBedroom !== '') {
+    const tdfPerBedroom = Number(form.tdfPerBedroom)
+    if (!Number.isInteger(tdfPerBedroom) || tdfPerBedroom < 0) {
+      errors.tdfPerBedroom = 'Enter a whole AED amount of 0 or more'
+    }
+  }
+
+  // UI-only gate (no CreatePropertyInput field backs this) — see spec.md's explicit out-of-scope note.
+  if (!form.tdfAuthorized) {
+    errors.tdfAuthorized = 'Authorisation to collect the Tourism Dirham Fee is required'
+  }
+
   return errors
 }
 
 export function CreatePropertyPage() {
+  const navigate = useNavigate()
   const [form, setForm] = useState<CreatePropertyFormState>(initialFormState)
   const errors = useMemo(() => validate(form), [form])
+  const [createProperty, { data, loading, error }] = useCreatePropertyMutation()
 
   function updateTitle(title: string) {
     setForm((prev) => ({
@@ -170,6 +199,67 @@ export function CreatePropertyPage() {
 
   function set<K extends keyof CreatePropertyFormState>(key: K, value: CreatePropertyFormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function handleSave() {
+    if (Object.keys(errors).length > 0) return
+    try {
+      await createProperty({
+        variables: {
+          input: {
+            slug: form.slug,
+            title: form.title,
+            description: form.description,
+            propertyType: form.propertyType as PropertyType,
+            bedrooms: Number(form.bedrooms),
+            bathrooms: Number(form.bathrooms),
+            maxGuests: Number(form.maxGuests),
+            beds: [{ type: form.bedType, count: Number(form.bedCount) }],
+            areaId: form.areaId,
+            cityId: form.cityId,
+            lat: Number(form.lat),
+            lng: Number(form.lng),
+            basePriceAed: Number(form.basePriceAed),
+            cleaningFeeAed: form.cleaningFeeAed === '' ? undefined : Number(form.cleaningFeeAed),
+            isInstantBook: form.isInstantBook,
+            detPermitNumber: form.detPermitNumber === '' ? undefined : form.detPermitNumber,
+            tdfPerBedroom: form.tdfPerBedroom === '' ? undefined : Number(form.tdfPerBedroom),
+          },
+        },
+      })
+    } catch {
+      // WHY: useMutation rethrows on error; already surfaced to the user via the `error` state below.
+    }
+  }
+
+  if (data?.createProperty) {
+    return (
+      <div className="flex flex-col gap-6 px-10 py-8 max-w-[880px]">
+        <div className="flex flex-col gap-1">
+          <h1 className="font-serif font-medium text-[36px] leading-10 tracking-[-0.25px] text-ink">
+            Property created
+          </h1>
+          <p className="text-base text-ink-secondary">Your new listing was saved as a draft.</p>
+        </div>
+        <div className="flex flex-col gap-3 bg-surface border border-line rounded-2xl p-6">
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-ink-muted">Property id</span>
+            <span className="text-base text-ink">{data.createProperty.id}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-ink-muted">Slug</span>
+            <span className="text-base text-ink">{data.createProperty.slug}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-ink-muted">Status</span>
+            <span className="text-base text-ink">{data.createProperty.status}</span>
+          </div>
+        </div>
+        <div>
+          <Button variant="secondary" onClick={() => navigate('/')}>Back to Home</Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -248,6 +338,49 @@ export function CreatePropertyPage() {
         </div>
         <Checkbox label="Allow instant booking" checked={form.isInstantBook} onChange={(e) => set('isInstantBook', e.target.checked)} />
       </section>
+
+      <section className="flex flex-col gap-4 bg-surface border border-line rounded-2xl p-6">
+        <h2 className="text-lg font-semibold text-ink">DET & compliance</h2>
+        <Input
+          label="DET permit number"
+          value={form.detPermitNumber}
+          onChange={(e) => set('detPermitNumber', e.target.value)}
+          error={errors.detPermitNumber}
+          helperText="Optional here — required before this listing can go live"
+        />
+        <Input
+          label="Tourism Dirham Fee (AED per bedroom per night)"
+          type="number"
+          min={0}
+          value={form.tdfPerBedroom}
+          onChange={(e) => set('tdfPerBedroom', e.target.value)}
+          error={errors.tdfPerBedroom}
+          helperText="Optional"
+        />
+        <div className="flex flex-col gap-1.5">
+          <Checkbox
+            label="I authorise DubaiShortStay to collect and remit the Tourism Dirham Fee on my behalf"
+            checked={form.tdfAuthorized}
+            onChange={(e) => set('tdfAuthorized', e.target.checked)}
+          />
+          {errors.tdfAuthorized && <div className="text-xs text-red-700">{errors.tdfAuthorized}</div>}
+        </div>
+      </section>
+
+      {error && (
+        <div className="text-sm text-red-700 bg-red-50 border border-red-700 rounded-lg p-4" role="alert">
+          {error.message}
+        </div>
+      )}
+
+      <div className="flex justify-end gap-3">
+        <Button variant="ghost" onClick={() => navigate('/')}>
+          Discard
+        </Button>
+        <Button variant="secondary" onClick={handleSave} disabled={loading}>
+          {loading ? 'Saving…' : 'Save'}
+        </Button>
+      </div>
     </div>
   )
 }
